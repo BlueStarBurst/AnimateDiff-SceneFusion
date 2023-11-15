@@ -5,6 +5,7 @@ samples/
 __pycache__/
 ossutil_output/
 .ossutil_checkpoint/
+data/.cache
 
 scripts/
 !scripts/animate.py
