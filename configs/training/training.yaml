@@ -28,16 +28,16 @@ noise_scheduler_kwargs:
   clip_sample:         false
 
 train_data:
-  csv_path:        "/mnt/petrelfs/guoyuwei/projects/datasets/webvid/results_2M_val.csv"
-  video_folder:    "/mnt/petrelfs/guoyuwei/projects/datasets/webvid/2M_val"
+  csv_path:        "/data/output.csv"
+  video_folder:    "/data/output"
   sample_size:     256
   sample_stride:   4
-  sample_n_frames: 16
+  sample_n_frames: 5
 
 validation_data:
   prompts:
     - "Snow rocky mountains peaks canyon. Snow blanketed rocky mountains surround and shadow deep canyons."
-    - "A drone view of celebration with Christma tree and fireworks, starry sky - background."
+    - "A drone view of celebration with Christmas tree and fireworks, starry sky - background."
     - "Robot dancing in times square."
     - "Pacific coast, carmel by the sea ocean and waves."
   num_inference_steps: 25
