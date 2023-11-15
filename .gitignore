@@ -20,6 +20,7 @@ models/StableDiffusion/*
 !models/StableDiffusion/*.txt
 !models/Motion_Module/
 !models/Motion_Module/*.txt
+models/Motion_Module/*
 !models/DreamBooth_LoRA/
 !models/DreamBooth_LoRA/*.txt
 !models/MotionLoRA/
