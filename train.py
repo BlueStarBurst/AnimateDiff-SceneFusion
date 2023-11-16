@@ -481,6 +481,7 @@ def main(
 
 
 if __name__ == "__main__":
+    print("HI")
     parser = argparse.ArgumentParser()
     parser.add_argument("--config",   type=str, required=True)
     parser.add_argument("--launcher", type=str, choices=["pytorch", "slurm"], default="pytorch")
