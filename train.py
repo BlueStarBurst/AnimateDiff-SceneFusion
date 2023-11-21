@@ -73,7 +73,7 @@ def main(
     image_finetune: bool = False,
 
     motion_module: str = "models/Motion_Module/mm_sd_v15.ckpt",
-    inference_config_path: str = "configs/inference/inference-v1.yaml",
+    inference_config_path: str = "configs/inference/inference-v3.yaml",
     motion_module_pe_multiplier: int = 1,
     dataset_class: str = 'MultiTuneAVideoDataset',
 ):
