@@ -64,8 +64,6 @@ validation_steps:       100
 
 global_seed: 42
 mixed_precision_training: true
-use_8bit_adam: false
-gradient_checkpointing: true
 enable_xformers_memory_efficient_attention: True
 
 is_debug: True
