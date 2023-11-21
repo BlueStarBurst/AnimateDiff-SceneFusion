@@ -1,7 +1,7 @@
 image_finetune: false
 
 output_dir: "outputs"
-pretrained_model_path: "models/StableDiffusion"
+pretrained_model_path: "runwayml/stable-diffusion-v1-5"
 
 unet_additional_kwargs:
   use_motion_module              : true
@@ -40,27 +40,32 @@ validation_data:
     - "A drone view of celebration with Christmas tree and fireworks, starry sky - background."
     - "Robot dancing in times square."
     - "Pacific coast, carmel by the sea ocean and waves."
-  num_inference_steps: 25
-  guidance_scale: 8.
+  num_inference_steps: 20
+  guidance_scale: 12.5
+  temporal_context": 24
+  use_inv_latent": True
+  num_inv_steps: 50
 
 trainable_modules:
   - "motion_modules."
 
 unet_checkpoint_path: ""
 
-learning_rate:    1.e-4
-train_batch_size: 10
+learning_rate:    3.e-5
+train_batch_size: 1
 
 max_train_epoch:      -1
-max_train_steps:      10
+max_train_steps:      300
 checkpointing_epochs: -1
-checkpointing_steps:  5
+checkpointing_steps:  1000
 
-validation_steps:       10
+validation_steps:       100
 # validation_steps_tuple: [2, 50]
 
 global_seed: 42
 mixed_precision_training: true
+use_8bit_adam: false
+gradient_checkpointing: true
 enable_xformers_memory_efficient_attention: True
 
 is_debug: True

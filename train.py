@@ -166,13 +166,16 @@ def main(
     vae          = AutoencoderKL.from_pretrained(pretrained_model_path, subfolder="vae")
     tokenizer    = CLIPTokenizer.from_pretrained(pretrained_model_path, subfolder="tokenizer")
     text_encoder = CLIPTextModel.from_pretrained(pretrained_model_path, subfolder="text_encoder")
+    
+    unet_path = "unet"
+    
     if not image_finetune:
         unet = UNet3DConditionModel.from_pretrained_2d(
-            pretrained_model_path, subfolder="unet", 
+            unet_path, subfolder="unet", 
             unet_additional_kwargs=OmegaConf.to_container(unet_additional_kwargs)
         )
     else:
-        unet = UNet2DConditionModel.from_pretrained(pretrained_model_path, subfolder="unet")
+        unet = UNet2DConditionModel.from_pretrained(unet_path, subfolder="unet")
         
     # Load pretrained unet weights
     if unet_checkpoint_path != "":
@@ -226,7 +229,13 @@ def main(
     text_encoder.to(local_rank)
 
     # Get the training dataset
+    
+    print(train_data)
+    
     train_dataset = WebVid10M(**train_data, is_image=image_finetune)
+    
+    print(train_dataset)
+    
     distributed_sampler = DistributedSampler(
         train_dataset,
         num_replicas=num_processes,
