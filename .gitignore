@@ -25,3 +25,4 @@ models/Motion_Module/*
 !models/DreamBooth_LoRA/*.txt
 !models/MotionLoRA/
 !models/MotionLoRA/*.txt
+unet/*
