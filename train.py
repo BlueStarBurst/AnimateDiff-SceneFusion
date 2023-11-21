@@ -24,7 +24,7 @@ from diffusers.utils.import_utils import is_xformers_available
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
 
-from animatediff.models.unet import UNet3DConditionModel, Unet2DConditionalModel
+from animatediff.models.unet import UNet3DConditionModel
 from tuneavideo.data.frames_dataset import FramesDataset
 from tuneavideo.data.multi_dataset import MultiTuneAVideoDataset
 from animatediff.pipelines.pipeline_animation import AnimationPipeline
@@ -120,14 +120,12 @@ def main(
     
     unet_path = "unet"
     
-    if not image_finetune:
-        unet = UNet3DConditionModel.from_pretrained_2d(
-            unet_path, subfolder="unet", 
-            unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs)
-        )
-    else:
-        unet = Unet2DConditionalModel.from_pretrained(unet_path, subfolder="unet")
-        
+    
+    unet = UNet3DConditionModel.from_pretrained_2d(
+        unet_path, subfolder="unet", 
+        unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs)
+    )
+    
 
     motion_module_state_dict = torch.load(motion_module, map_location="cpu")
 
