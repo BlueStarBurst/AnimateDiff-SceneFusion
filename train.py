@@ -68,14 +68,38 @@ def main(
     use_8bit_adam: bool = False,
     enable_xformers_memory_efficient_attention: bool = True,
     seed: Optional[int] = None,
-    unet_additional_kwargs: Dict = {},
-    
-    image_finetune: bool = False,
 
     motion_module: str = "models/Motion_Module/mm_sd_v15.ckpt",
     inference_config_path: str = "configs/inference/inference-v3.yaml",
     motion_module_pe_multiplier: int = 1,
     dataset_class: str = 'MultiTuneAVideoDataset',
+    
+    # extra args
+    
+    image_finetune: bool = False,
+    
+    name: str = "scenefusion",
+    use_wandb: bool = True,
+    launcher: str = "launcher",
+    
+    cfg_random_null_text: bool = True,
+    cfg_random_null_text_ratio: float = 0.1,
+    
+    unet_checkpoint_path: str = "",
+    unet_additional_kwargs: Dict = {},
+    ema_decay: float = 0.9999,
+    noise_scheduler_kwargs = None,
+    
+    max_train_epoch: int = -1,
+    validation_steps_tuple: Tuple = (-1,),
+
+    num_workers: int = 32,
+    checkpointing_epochs: int = 5,
+
+    mixed_precision_training: bool = True,
+
+    global_seed: int = 42,
+    is_debug: bool = False,
 ):
     *_, config = inspect.getargvalues(inspect.currentframe())
 
