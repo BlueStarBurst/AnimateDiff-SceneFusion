@@ -68,6 +68,7 @@ def main(
     use_8bit_adam: bool = False,
     enable_xformers_memory_efficient_attention: bool = True,
     seed: Optional[int] = None,
+    unet_additional_kwargs: Dict = {},
     
     image_finetune: bool = False,
 
