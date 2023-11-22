@@ -6,8 +6,8 @@ pretrained_model_path: "runwayml/stable-diffusion-v1-5"
 
 
 train_data:
-  video_path: data/output/0.mp4
-  prompt: a bird's - eye view of a row of buildings in a city with trees in the foreground
+  video_path: "data/output/0.mp4"
+  prompt: "a bird's - eye view of a row of buildings in a city with trees in the foreground"
   n_sample_frames: 6
   width: 256
   height: 256
