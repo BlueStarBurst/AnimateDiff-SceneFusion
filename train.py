@@ -410,11 +410,11 @@ def main(
                                                          latents=ddim_inv_latent,
                                                          fp16=True,
                                                          **validation_data).videos
-                            save_videos_grid(sample, f"{output_dir}/samples/sample-{global_step}/{idx}.gif")
+                            save_videos_grid(sample, f"{output_dir}/samples/sample-{global_step}/{idx}.gif", fps=1)
                             samples.append(sample)
                         samples = torch.concat(samples)
                         save_path = f"{output_dir}/samples/sample-{global_step}.gif"
-                        save_videos_grid(samples, save_path)
+                        save_videos_grid(samples, save_path, fps=1)
                         logger.info(f"Saved samples to {save_path}")
 
             logs = {"step_loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
