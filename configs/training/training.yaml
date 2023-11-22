@@ -3,7 +3,7 @@ motion_module: /content/AnimateDiff-SceneFusion/models/Motion_Module/mm_sd_v15.c
 output_dir: /content/AnimateDiff-SceneFusion/models/Motion_Module/test
 train_data:
   video_path: data/output/0.mp4
-  prompt: a bird's - eye view of a row of buildings in a city with trees in the foreground
+  prompt: camera panning left to right, a bird's eye view of a row of buildings in a city with trees in the foreground
   n_sample_frames: 6
   width: 256
   height: 256
@@ -11,17 +11,17 @@ train_data:
   sample_frame_rate: 1
 validation_data:
   prompts:
-  - a bird's - eye view of a row of buildings in a city with trees in the foreground
+  - camera panning left to right, a bird's eye view of a row of buildings in a city with trees in the foreground, masterpiece, best quality
   video_length: 6
   width: 256
   height: 256
-  num_inference_steps: 20
+  num_inference_steps: 50
   guidance_scale: 12.5
   use_inv_latent: true
   num_inv_steps: 50
-learning_rate: 3.0e-05
+learning_rate: 3.0e-04
 train_batch_size: 1
-max_train_steps: 1
+max_train_steps: 5
 checkpointing_steps: 100
 validation_steps: 1
 trainable_modules:
