@@ -6,11 +6,13 @@ pretrained_model_path: "runwayml/stable-diffusion-v1-5"
 
 
 train_data:
-  csv_path:        "data/output.csv"
-  video_folder:    "data/output"
-  sample_size:     256
-  sample_stride:   4
-  sample_n_frames: 5
+  video_path: data/output/0.mp4
+  prompt: a bird's - eye view of a row of buildings in a city with trees in the foreground
+  n_sample_frames: 6
+  width: 256
+  height: 256
+  sample_start_idx: 0
+  sample_frame_rate: 1
 
 validation_data:
   prompts:
@@ -19,6 +21,8 @@ validation_data:
     - "Robot dancing in times square."
     - "Pacific coast, carmel by the sea ocean and waves."
   num_inference_steps: 20
+  width: 256
+  height: 256
   guidance_scale: 12.5
   temporal_context": 24
   use_inv_latent": True
