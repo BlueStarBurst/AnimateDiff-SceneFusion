@@ -267,6 +267,8 @@ def main(
     text_encoder.to(accelerator.device, dtype=weight_dtype)
     vae.to(accelerator.device, dtype=weight_dtype)
 
+    print("DATA LEN:", len(train_dataloader))
+
     # We need to recalculate our total training steps as the size of the training dataloader may have changed.
     num_update_steps_per_epoch = math.ceil(len(train_dataloader) / gradient_accumulation_steps)
     # Afterwards we recalculate our number of training epochs
