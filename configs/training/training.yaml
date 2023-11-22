@@ -10,7 +10,7 @@ train_data:
 validation_data:
   prompts:
   - camera panning right to left, a bird's eye view of a row of buildings in a city with trees in the foreground, masterpiece, best quality
-  video_length: 6
+  video_length: 5
   width: 256
   height: 256
   num_inference_steps: 20
