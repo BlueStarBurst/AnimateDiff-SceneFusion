@@ -190,6 +190,8 @@ def main(
             learning_rate * gradient_accumulation_steps * train_batch_size * accelerator.num_processes
         )
 
+
+    print("optimizer values", learning_rate, adam_beta1, adam_beta2, adam_weight_decay, adam_epsilon)
     # Initialize the optimizer
     if use_8bit_adam:
         try:
