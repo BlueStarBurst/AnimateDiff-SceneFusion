@@ -142,14 +142,16 @@ def main(
     tokenizer = CLIPTokenizer.from_pretrained(pretrained_model_path, subfolder="tokenizer")
     text_encoder = CLIPTextModel.from_pretrained(pretrained_model_path, subfolder="text_encoder")
     vae = AutoencoderKL.from_pretrained(pretrained_model_path, subfolder="vae")
-    
-    unet_path = "unet"
-    
-    
     unet = UNet3DConditionModel.from_pretrained_2d(
-        unet_path, subfolder="unet", 
+        pretrained_model_path, subfolder="unet", 
         unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs)
     )
+    
+    # unet_path = "unet"
+    # unet = UNet3DConditionModel.from_pretrained_2d(
+    #     unet_path, subfolder="unet", 
+    #     unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs)
+    # )
     
 
     motion_module_state_dict = torch.load(motion_module, map_location="cpu")
