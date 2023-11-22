@@ -7,7 +7,7 @@ pretrained_model_path: "models/StableDiffusion"
 
 train_data:
   video_path: "data/output/0.mp4"
-  prompt: "a bird's - eye view of a row of buildings in a city with trees in the foreground"
+  prompt: "a bird's eye view of a row of buildings in a city with trees in the foreground"
   n_sample_frames: 6
   width: 256
   height: 256
@@ -27,9 +27,10 @@ validation_data:
   temporal_context": 24
   use_inv_latent": True
   num_inv_steps: 50
+  video_length: 6
 
 trainable_modules:
-  - "motion_modules."
+  - "to_q"
 
 unet_checkpoint_path: ""
 
@@ -49,3 +50,8 @@ mixed_precision_training: true
 enable_xformers_memory_efficient_attention: True
 
 is_debug: True
+
+seed: 33
+mixed_precision": "fp16"
+use_8bit_adam": False
+gradient_checkpointing": True
