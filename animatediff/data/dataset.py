@@ -103,7 +103,7 @@ class ImgSeqDataset(Dataset):
         self.width = sample_size
         self.height = sample_size
         
-        self.sample_size = tuple(sample_size) if not isinstance(sample_size, int) else (sample_size, sample_size)
+        sample_size = tuple(sample_size) if not isinstance(sample_size, int) else (sample_size, sample_size)
         
         self.pixel_transforms = transforms.Compose([
             transforms.RandomHorizontalFlip(),
