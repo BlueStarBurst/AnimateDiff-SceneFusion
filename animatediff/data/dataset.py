@@ -95,6 +95,8 @@ class ImgSeqDataset(Dataset):
         self.sample_stride   = sample_stride
         self.sample_n_frames = sample_n_frames
         self.is_image        = is_image
+        self.prompt          = [video_dict['name'] for video_dict in self.dataset]
+        self.prompt_ids      = None
         
         sample_size = tuple(sample_size) if not isinstance(sample_size, int) else (sample_size, sample_size)
         self.pixel_transforms = transforms.Compose([
