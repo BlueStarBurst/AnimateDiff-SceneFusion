@@ -100,7 +100,11 @@ class ImgSeqDataset(Dataset):
         self.prompt          = [video_dict['name'] for video_dict in self.dataset]
         self.prompt_ids      = [None]
         
+        self.width = sample_size
+        self.height = sample_size
+        
         self.sample_size = tuple(sample_size) if not isinstance(sample_size, int) else (sample_size, sample_size)
+        
         self.pixel_transforms = transforms.Compose([
             transforms.RandomHorizontalFlip(),
             transforms.Resize(sample_size[0]),
@@ -143,7 +147,7 @@ class ImgSeqDataset(Dataset):
             
             video_dir    = os.path.join(self.video_folder, f"{videoid}.mp4")
             # load and sample video frames
-            vr = decord.VideoReader(video_dir, width=self.sample_size[0], height=self.sample_size[1])
+            vr = decord.VideoReader(video_dir, width=self.width, height=self.height)
             sample_index = list(range(0, len(vr), 1))[:self.sample_n_frames]
             video = vr.get_batch(sample_index)
             video = rearrange(video, "f h w c -> f c h w")
