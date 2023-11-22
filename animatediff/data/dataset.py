@@ -78,7 +78,7 @@ class WebVid10M(Dataset):
     
 
 # implement the same dataset but use the first frames of the video instead of random frames
-class ImgSeq(Dataset):
+class ImgSeqDataset(Dataset):
     def __init__(
             self,
             csv_path, video_folder,

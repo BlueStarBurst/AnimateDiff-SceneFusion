@@ -26,6 +26,7 @@ from transformers import CLIPTextModel, CLIPTokenizer
 
 from animatediff.models.unet import UNet3DConditionModel
 from tuneavideo.data.frames_dataset import FramesDataset
+from animatediff.data.dataset import ImgSeqDataset
 from tuneavideo.data.multi_dataset import MultiTuneAVideoDataset
 from animatediff.pipelines.pipeline_animation import AnimationPipeline
 from tuneavideo.util import save_videos_grid, ddim_inversion
@@ -218,7 +219,7 @@ def main(
     # Get the training dataset
     train_dataset = None
     if dataset_class == 'MultiTuneAVideoDataset':
-        train_dataset = MultiTuneAVideoDataset(**train_data)
+        train_dataset = ImgSeqDataset(**train_data)
 
         # Preprocessing the dataset
         train_dataset.prompt_ids = [None] * len(train_dataset.prompt)

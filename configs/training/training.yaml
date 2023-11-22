@@ -2,13 +2,11 @@ pretrained_model_path: /content/AnimateDiff-SceneFusion/models/StableDiffusion/
 motion_module: /content/AnimateDiff-SceneFusion/models/Motion_Module/mm_sd_v15.ckpt
 output_dir: /content/AnimateDiff-SceneFusion/models/Motion_Module/test
 train_data:
-  video_path: data/output/0.mp4
-  prompt: camera panning right to left, a bird's eye view of a row of buildings in a city with trees in the foreground
-  n_sample_frames: 6
-  width: 256
-  height: 256
-  sample_start_idx: 0
-  sample_frame_rate: 1
+  csv_path:        "data/output.csv"
+  video_folder:    "data/output"
+  sample_size:     256
+  sample_stride:   100
+  sample_n_frames: 5
 validation_data:
   prompts:
   - camera panning right to left, a bird's eye view of a row of buildings in a city with trees in the foreground, masterpiece, best quality
