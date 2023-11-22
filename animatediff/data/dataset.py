@@ -1,7 +1,9 @@
+import decord
+decord.bridge.set_bridge('torch')
+
 import os, io, csv, math, random
 import numpy as np
 from einops import rearrange
-from decord import VideoReader
 
 import torch
 import torchvision.transforms as transforms
@@ -41,7 +43,7 @@ class WebVid10M(Dataset):
         videoid, name, page_dir = video_dict['videoid'], video_dict['name'], video_dict['page_dir']
         
         video_dir    = os.path.join(self.video_folder, f"{videoid}.mp4")
-        video_reader = VideoReader(video_dir)
+        video_reader = decord.VideoReader(video_dir)
         video_length = len(video_reader)
         
         if not self.is_image:
@@ -96,9 +98,9 @@ class ImgSeqDataset(Dataset):
         self.sample_n_frames = sample_n_frames
         self.is_image        = is_image
         self.prompt          = [video_dict['name'] for video_dict in self.dataset]
-        self.prompt_ids      = None
+        self.prompt_ids      = [None]
         
-        sample_size = tuple(sample_size) if not isinstance(sample_size, int) else (sample_size, sample_size)
+        self.sample_size = tuple(sample_size) if not isinstance(sample_size, int) else (sample_size, sample_size)
         self.pixel_transforms = transforms.Compose([
             transforms.RandomHorizontalFlip(),
             transforms.Resize(sample_size[0]),
@@ -111,7 +113,7 @@ class ImgSeqDataset(Dataset):
         videoid, name, page_dir = video_dict['videoid'], video_dict['name'], video_dict['page_dir']
         
         video_dir    = os.path.join(self.video_folder, f"{videoid}.mp4")
-        video_reader = VideoReader(video_dir)
+        video_reader = decord.VideoReader(video_dir)
         video_length = len(video_reader)
         
         if not self.is_image:
@@ -134,6 +136,25 @@ class ImgSeqDataset(Dataset):
         return self.length
 
     def __getitem__(self, idx):
+        
+        if not self.is_image:
+            video_dict = self.dataset[idx]
+            videoid, name, page_dir = video_dict['videoid'], video_dict['name'], video_dict['page_dir']
+            
+            video_dir    = os.path.join(self.video_folder, f"{videoid}.mp4")
+            # load and sample video frames
+            vr = decord.VideoReader(video_dir, width=self.sample_size[0], height=self.sample_size[1])
+            sample_index = list(range(0, len(vr), 1))[:self.sample_n_frames]
+            video = vr.get_batch(sample_index)
+            video = rearrange(video, "f h w c -> f c h w")
+
+            example = {
+                "pixel_values": (video / 127.5 - 1.0),
+                "prompt_ids": self.prompt_ids[idx]
+            }
+
+            return example
+        
         while True:
             try:
                 pixel_values, name = self.get_batch(idx)
