@@ -426,3 +426,10 @@ class AnimationPipeline(DiffusionPipeline):
             return video
 
         return AnimationPipelineOutput(videos=video)
+    
+    def push_to_hub(self, repo_name: str, repo_url: str, commit_message: str, organization: Optional[str] = None):
+        """
+        Pushes the model to the hub. This is a wrapper around `DiffusionPipeline.push_to_hub` that allows Pipeline.from_pretrained to work.
+        """
+        return super().push_to_hub(repo_name, repo_url, commit_message, organization)
+        
