@@ -1,0 +1,33 @@
+pretrained_model_path: models/StableDiffusion/
+motion_module: models/Motion_Module/mm_sd_v15.ckpt
+output_dir: models/Motion_Module/test
+train_data:
+  video_folder: data/output
+  csv_path: data/output.csv
+  sample_n_frames: 5
+  sample_stride: 100
+  sample_size: 256
+validation_data:
+  prompts:
+  - camera panning right to left, a bird's eye view of a row of buildings in a city
+    with trees in the foreground, masterpiece, best quality
+  video_length: 5
+  width: 256
+  height: 256
+  num_inference_steps: 20
+  guidance_scale: 12.5
+  temporal_context: 24
+  use_inv_latent: true
+  num_inv_steps: 50
+learning_rate: 0.0003
+train_batch_size: 1
+max_train_steps: 1
+checkpointing_steps: 100
+validation_steps: 1
+trainable_modules:
+- to_q
+seed: 33
+mixed_precision: fp16
+use_8bit_adam: false
+gradient_checkpointing: true
+enable_xformers_memory_efficient_attention: true

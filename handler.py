@@ -1,12 +1,9 @@
 # this is the huggingface handler file
-from animatediff.pipelines.pipeline_animation import AnimationPipeline
+
 from diffusers import AutoencoderKL, DDPMScheduler, DDIMScheduler
 from transformers import CLIPTextModel, CLIPTokenizer
 from omegaconf import OmegaConf
-from animatediff.models.unet import UNet3DConditionModel
-from animatediff.pipelines.pipeline_animation import AnimationPipeline
-from animatediff.utils.util import save_videos_grid
-from animatediff.utils.util import load_weights
+
 from diffusers.utils.import_utils import is_xformers_available
 from typing import Any
 import torch
@@ -14,6 +11,14 @@ import einops
 import torchvision
 
 import numpy as np
+
+
+from animatediff.pipelines.pipeline_animation import AnimationPipeline
+from animatediff.models.unet import UNet3DConditionModel
+from animatediff.pipelines.pipeline_animation import AnimationPipeline
+from animatediff.utils.util import save_videos_grid
+from animatediff.utils.util import load_weights
+
 
 class EndpointHandler():
     def __init__(self, model_path: str = "models/StableDiffusion/", inference_config_path: str = "configs/inference/inference-v3.yaml", motion_module: str = "models/Motion_Module/mm_sd_v15.ckpt"):
@@ -89,3 +94,10 @@ class EndpointHandler():
         
         # return a gif file as bytes
         return outputs
+    
+
+# This is the entry point for the serverless function.
+# This function will be called during inference time.
+
+
+new_handler = EndpointHandler()
