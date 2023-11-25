@@ -379,12 +379,13 @@ def main(
                 # Backpropagate
                 # accelerator.backward(loss)
                 
-                with accelerator.scale_loss(loss) as scaled_loss:
+                with accelerator.scaler.scale_loss(loss) as scaled_loss:
                     scaled_loss.backward()
                 
                 if accelerator.sync_gradients:
                     accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
                     
+                print("grad: ")
                 for param in unet.parameters():
                     if param.grad is not None:
                         print(param.grad)
