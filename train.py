@@ -374,10 +374,10 @@ def main(
                     train_loss += avg_loss.item() / gradient_accumulation_steps
 
                     # Backpropagate
-                    # accelerator.backward(loss)
+                    accelerator.backward(loss)
                     
-                    with accelerator.scale_loss(loss) as scaled_loss:
-                        scaled_loss.backward()
+                    # with accelerator.scale_loss(loss) as scaled_loss:
+                    #     scaled_loss.backward()
                     
                     if accelerator.sync_gradients:
                         accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
