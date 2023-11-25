@@ -321,6 +321,7 @@ def main(
     # Only show the progress bar once on each machine.
     progress_bar = tqdm(range(global_step, max_train_steps), disable=not accelerator.is_local_main_process)
     progress_bar.set_description("Steps")
+    optimizer.zero_grad()
 
     for epoch in range(first_epoch, num_train_epochs):
         unet.train()
@@ -372,7 +373,11 @@ def main(
                 train_loss += avg_loss.item() / gradient_accumulation_steps
 
                 # Backpropagate
-                accelerator.backward(loss)
+                # accelerator.backward(loss)
+                
+                with accelerator.scale_loss(loss) as scaled_loss:
+                    scaled_loss.backward()
+                
                 if accelerator.sync_gradients:
                     accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
                     
