@@ -10,6 +10,7 @@ import os
 from diffusers.utils.import_utils import is_xformers_available
 from typing import Any
 import torch
+import imageio
 import torchvision
 import numpy as np
 from einops import rearrange
@@ -101,10 +102,14 @@ class EndpointHandler():
             x = (x * 255).numpy().astype(np.uint8)
             outputs.append(x)
             
-        # imageio.mimsave(path, outputs, fps=fps)
+        path = "output.gif"
+        imageio.mimsave(path, outputs, fps=fps)
         
-        # return a gif file as bytes
-        return outputs
+        # open the file as binary and read the data
+        with open(path, mode="rb") as file:
+            fileContent = file.read()
+        # return json response with binary data
+        return fileContent
     
 
 # This is the entry point for the serverless function.
