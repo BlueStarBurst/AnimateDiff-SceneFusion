@@ -308,9 +308,14 @@ class VersatileAttention(CrossAttention):
                 attention_mask = F.pad(attention_mask, (0, target_length), value=0.0)
                 attention_mask = attention_mask.repeat_interleave(self.heads, dim=0)
 
+        if not hasattr(self, '_use_memory_efficient_attention_xformers'):
+            self._use_memory_efficient_attention_xformers = True
+
+
         # attention, what we cannot get enough of
         if self._use_memory_efficient_attention_xformers:
-            hidden_states = self._memory_efficient_attention_xformers(query, key, value, attention_mask)
+            self.set_use_memory_efficient_attention_xformers(True)
+            # hidden_states = self._memory_efficient_attention_xformers(query, key, value, attention_mask)
             # Some versions of xformers return output in fp32, cast it back to the dtype of the input
             hidden_states = hidden_states.to(query.dtype)
         else:
