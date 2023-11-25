@@ -10,7 +10,7 @@ from animatediff.utils.util import load_weights
 from diffusers.utils.import_utils import is_xformers_available
 from typing import Any
 import torch
-from einops import rearrange
+import einops
 import torchvision
 
 import numpy as np
@@ -71,7 +71,7 @@ class EndpointHandler():
             video_length= 5,
             ).videos
         
-        videos = rearrange(vids, "b c t h w -> t b c h w")
+        videos = einops.rearrange(vids, "b c t h w -> t b c h w")
         n_rows=6
         fps=1
         loop = True
