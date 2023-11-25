@@ -364,35 +364,35 @@ def main(
                 else:
                     raise ValueError(f"Unknown prediction type {noise_scheduler.prediction_type}")
 
-                with torch.cuda.amp.autocast(enabled=mixed_precision_training):
-                    # Predict the noise residual and compute loss
-                    model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
-                    print("Model Output:", model_pred)
-                    loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
+                
+                # Predict the noise residual and compute loss
+                model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
+                print("Model Output:", model_pred)
+                loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
 
-                    # Gather the losses across all processes for logging (if we use distributed training).
-                    avg_loss = accelerator.gather(loss.repeat(train_batch_size)).mean()
-                    train_loss += avg_loss.item() / gradient_accumulation_steps
+                # Gather the losses across all processes for logging (if we use distributed training).
+                avg_loss = accelerator.gather(loss.repeat(train_batch_size)).mean()
+                train_loss += avg_loss.item() / gradient_accumulation_steps
 
-                    print("Loss:", loss)
+                print("Loss:", loss)
 
-                    # Backpropagate
-                    accelerator.backward(loss)
+                # Backpropagate
+                # accelerator.backward(loss)
+                
+                with accelerator.scale_loss(loss) as scaled_loss:
+                    scaled_loss.backward()
+                
+                if accelerator.sync_gradients:
+                    accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
                     
-                    # with accelerator.scale_loss(loss) as scaled_loss:
-                    #     scaled_loss.backward()
+                for param in unet.parameters():
+                    if param.grad is not None:
+                        print(param.grad)
+                        break
                     
-                    if accelerator.sync_gradients:
-                        accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
-                        
-                    for param in unet.parameters():
-                        if param.grad is not None:
-                            print(param.grad)
-                            break
-                        
-                    optimizer.step()
-                    lr_scheduler.step()
-                    optimizer.zero_grad()
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
