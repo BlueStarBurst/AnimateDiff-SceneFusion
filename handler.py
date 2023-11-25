@@ -48,18 +48,6 @@ class EndpointHandler():
             lora_model_path            = "",
             lora_alpha                 = 0.8,
         ).to("cuda")
-
-    def initialize(self, context):
-        """
-        Initialize model. This will be called during model loading time
-        """
-        
-        
-
-    def preprocess(self, data):
-        """
-        preprocess will be called once for each request.
-        """
     
     def __call__(self, prompt, negative_prompt, steps, guidance_scale):
         """
