@@ -367,11 +367,14 @@ def main(
                 with torch.cuda.amp.autocast(enabled=mixed_precision_training):
                     # Predict the noise residual and compute loss
                     model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
+                    print("Model Output:", model_pred)
                     loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
 
                     # Gather the losses across all processes for logging (if we use distributed training).
                     avg_loss = accelerator.gather(loss.repeat(train_batch_size)).mean()
                     train_loss += avg_loss.item() / gradient_accumulation_steps
+
+                    print("Loss:", loss)
 
                     # Backpropagate
                     accelerator.backward(loss)
@@ -383,7 +386,9 @@ def main(
                         accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
                         
                     for param in unet.parameters():
-                        print(param.grad)
+                        if param.grad is not None:
+                            print(param.grad)
+                            break
                         
                     optimizer.step()
                     lr_scheduler.step()
