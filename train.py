@@ -377,10 +377,7 @@ def main(
                 print("Loss:", loss)
 
                 # Backpropagate
-                # accelerator.backward(loss)
-                
-                with accelerator.scaler.scale_loss(loss) as scaled_loss:
-                    scaled_loss.backward()
+                accelerator.backward(loss)
                 
                 if accelerator.sync_gradients:
                     accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
