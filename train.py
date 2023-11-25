@@ -376,7 +376,7 @@ def main(
                     accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
                     
                 for param in unet.parameters():
-                    print(unet.grad)
+                    print(param.grad)
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
