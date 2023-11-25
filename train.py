@@ -374,7 +374,6 @@ def main(
                 for name, module in unet.named_modules():
                     if "motion_modules" in name and (train_whole_module or name.endswith(tuple(trainable_modules))):
                         for params in module.parameters():
-                            print("trainable", name)
                             params.requires_grad = True
 
                 # Backpropagate
