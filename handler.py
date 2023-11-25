@@ -52,7 +52,6 @@ class EndpointHandler():
         # huggingface download motion module from bluestarburst/AnimateDiff-SceneFusion/models/Motion_Module/mm_sd_v15.ckpt
 
         motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/Motion_Module/mm_sd_v15.ckpt")
-        
 
         self.pipeline = load_weights(
             self.pipeline,
