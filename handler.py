@@ -6,6 +6,7 @@ from omegaconf import OmegaConf
 from huggingface_hub import hf_hub_download, try_to_load_from_cache
 
 import os
+import json
 
 from diffusers.utils.import_utils import is_xformers_available
 from typing import Any
@@ -109,7 +110,7 @@ class EndpointHandler():
         with open(path, mode="rb") as file:
             fileContent = file.read()
         # return json response with binary data
-        return fileContent
+        return json.loads(fileContent)
     
 
 # This is the entry point for the serverless function.
