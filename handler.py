@@ -7,6 +7,7 @@ from huggingface_hub import hf_hub_download, try_to_load_from_cache
 
 import os
 import json
+import base64
 
 from diffusers.utils.import_utils import is_xformers_available
 from typing import Any
@@ -108,9 +109,19 @@ class EndpointHandler():
         
         # open the file as binary and read the data
         with open(path, mode="rb") as file:
-            fileContent = file.read()
+            file_content = file.read()
         # return json response with binary data
-        return json.loads(fileContent)
+        # Encode the binary data using Base64
+        base64_encoded_content = base64.b64encode(file_content).decode("utf-8")
+
+        # Create a JSON object with the Base64-encoded content
+        json_data = {
+            "filename": "output.gif",
+            "content": base64_encoded_content
+        }
+
+        # Convert the JSON object to a JSON-formatted string
+        return json.dumps(json_data)
     
 
 # This is the entry point for the serverless function.
