@@ -12,26 +12,25 @@ videoid,name,page_dir
 10,"camera panning right to left, a bird's - eye view of a row of buildings in a city with trees in the foreground",raw/3dDS1RL
 11,"camera panning left to right, a computer generated image of a blue diamond in the middle of a green and leafy area",raw/3dDS20
 12,"camera panning left to right, a computer generated image of a landscape with trees, rocks, and a path through a forest",raw/3dDS21
-13,"camera panning left to right, a computer generated image of a building with a blue roof and a blue roof on top of it",raw/3dDS22
+13,"camera panning right to left, a computer generated image of a building with a blue roof and a blue roof on top of it",raw/3dDS22RL
 14,"camera panning left to right, a map of a small town with a lot of trees and bushes in the middle of it",raw/3dDS23
-15,"camera panning left to right, a computer generated image of a building with a blue roof and a green lawn in front of it",raw/3dDS24
+15,"camera panning right to left, a computer generated image of a building with a blue roof and a green lawn in front of it",raw/3dDS24RL
 16,"camera panning left to right, an artist's rendering of a floating island in the middle of a large body of water",raw/3dDS25
 17,"camera panning left to right, a couple of white birds floating on top of a lake filled with waterlily green leaves",raw/3dDS26
-18,"camera panning left to right, a bunch of poles that are standing in front of a building with a sign that says shop",raw/3dDS27
-19,"camera panning left to right, a 3d rendering of a jail cell with bars and bars on each side of the cell wall",raw/3dDS28
-20,"camera panning left to right, an artist's rendering of a bridge over a body of water with a building in the background",raw/3dDS29
-21,"camera panning right to left, a bird's eye view of a building with a lot of trees in front of it",raw/3dDS2RL
-22,"camera panning left to right, an artist's rendering of a highway with a bridge in the middle and trees on both sides",raw/3dDS30
-23,"camera panning left to right, an aerial view of a freeway with multiple lanes and a bridge in the foreground and a cityscape in the background",raw/3dDS31
-24,"camera panning left to right, an artist's rendering of a bridge over a body of water with a clock tower in the background",raw/3dDS32
-25,"camera panning left to right, a set of stairs leading up to the top of a set of stairs in a dimly lit area",raw/3dDS33
-26,"camera panning left to right, a 3d rendering of a subway station with red and yellow striped barriers and a red and white sign",raw/3dDS34
-27,"camera panning left to right, a screenshot of a subway station with a man in a suit and a woman in a dress",raw/3dDS35
-28,"camera panning left to right, a screenshot of a hallway in a building with a gate and a sign on the wall",raw/3dDS36
-29,"camera panning left to right, a bird's - eye view of a row of houses in the suburbs of a city",raw/3dDS3LR
-30,"camera panning left to right, a bird's eye view of a house with solar panels on the top of the roof",raw/3dDS4
-31,"camera panning left to right, a bird's eye view of a row of houses with solar panels on top of them",raw/3dDS5
-32,"camera panning left to right, a screenshot of a city street with a bench on one side and a building on the other",raw/3dDS6
-33,"camera panning right to left, a computer generated image of a computer generated image of a construction site with a truck in the background",raw/3dDS7RL
-34,"camera panning right to left, a screenshot of a city with a bunch of green objects in the middle of the street",raw/3dDS8RL
-35,"camera panning left to right, a computer generated image of a city street with tall buildings and a clock tower in the distance",raw/3dDS9
+18,"camera panning left to right, a 3d rendering of a jail cell with bars and bars on each side of the cell wall",raw/3dDS28
+19,"camera panning right to left, an artist's rendering of a bridge over a body of water with a building in the background",raw/3dDS29RL
+20,"camera panning right to left, a bird's eye view of a building with a lot of trees in front of it",raw/3dDS2RL
+21,"camera panning left to right, an artist's rendering of a highway with a bridge in the middle and trees on both sides",raw/3dDS30
+22,"camera panning left to right, an aerial view of a freeway with multiple lanes and a bridge in the foreground and a cityscape in the background",raw/3dDS31
+23,"camera panning left to right, an artist's rendering of a bridge over a body of water with a clock tower in the background",raw/3dDS32
+24,"camera panning left to right, a set of stairs leading up to the top of a set of stairs in a dimly lit area",raw/3dDS33
+25,"camera panning right to left, a 3d rendering of a subway station with red and yellow striped barriers and a red and white sign",raw/3dDS34RL
+26,"camera panning right to left, a screenshot of a subway station with a man in a suit and a woman in a dress",raw/3dDS35RL
+27,"camera panning right to left, a screenshot of a hallway in a building with a gate and a sign on the wall",raw/3dDS36RL
+28,"camera panning left to right, a bird's - eye view of a row of houses in the suburbs of a city",raw/3dDS3LR
+29,"camera panning left to right, a bird's eye view of a house with solar panels on the top of the roof",raw/3dDS4
+30,"camera panning left to right, a bird's eye view of a row of houses with solar panels on top of them",raw/3dDS5
+31,"camera panning left to right, a screenshot of a city street with a bench on one side and a building on the other",raw/3dDS6
+32,"camera panning right to left, a computer generated image of a computer generated image of a construction site with a truck in the background",raw/3dDS7RL
+33,"camera panning right to left, a screenshot of a city with a bunch of green objects in the middle of the street",raw/3dDS8RL
+34,"camera panning left to right, a computer generated image of a city street with tall buildings and a clock tower in the distance",raw/3dDS9
