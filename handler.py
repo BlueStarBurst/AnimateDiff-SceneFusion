@@ -66,7 +66,7 @@ class EndpointHandler():
         self.pipeline = AnimationPipeline(
             vae=vae, text_encoder=text_encoder, tokenizer=tokenizer, unet=unet,
             scheduler=DDIMScheduler(**OmegaConf.to_container(inference_config.noise_scheduler_kwargs.DDIMScheduler))
-        ).to("cuda")
+        )
         
         # huggingface download motion module from bluestarburst/AnimateDiff-SceneFusion/models/Motion_Module/mm_sd_v15.ckpt
 
@@ -130,7 +130,7 @@ class EndpointHandler():
                     self.pipeline = convert_lora(self.pipeline, state_dict)
                     # self.pipeline = convert_lora(self.pipeline, state_dict, alpha=model_config.lora_alpha)
 
-        self.pipeline.to("cuda")
+        self.pipeline
     
     def __call__(self, data : Any):
         """
@@ -205,4 +205,4 @@ class EndpointHandler():
 # This function will be called during inference time.
 
 
-# new_handler = EndpointHandler()
+new_handler = EndpointHandler()

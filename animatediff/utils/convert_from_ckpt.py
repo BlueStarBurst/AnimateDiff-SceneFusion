@@ -198,20 +198,21 @@ def assign_to_checkpoint(
                 new_path = new_path.replace(replacement["old"], replacement["new"])
 
         # proj_attn.weight has to be converted from conv 1D to linear
-        if "proj_attn.weight" in new_path:
-            checkpoint[new_path] = old_checkpoint[path["old"]][:, :, 0]
+        if "to_out.0.weight" in new_path and "decoder" in new_path:
+            # turn [512, 512, 1] into [512, 512]
+            checkpoint[new_path] = old_checkpoint[path["old"]].squeeze(-1)
         else:
             checkpoint[new_path] = old_checkpoint[path["old"]]
 
 
 def conv_attn_to_linear(checkpoint):
     keys = list(checkpoint.keys())
-    attn_keys = ["query.weight", "key.weight", "value.weight"]
+    attn_keys = ["to_q.weight", "to_k.weight", "to_v.weight"]
     for key in keys:
         if ".".join(key.split(".")[-2:]) in attn_keys:
             if checkpoint[key].ndim > 2:
                 checkpoint[key] = checkpoint[key][:, :, 0, 0]
-        elif "proj_attn.weight" in key:
+        elif "to_out.0.weight" in key:
             if checkpoint[key].ndim > 2:
                 checkpoint[key] = checkpoint[key][:, :, 0]
 
@@ -632,7 +633,8 @@ def convert_ldm_vae_checkpoint(checkpoint, config):
     oldKey = {"old": "key", "new": "to_k"}
     oldQuery = {"old": "query", "new": "to_q"}
     oldValue = {"old": "value", "new": "to_v"}
-    assign_to_checkpoint(paths, new_checkpoint, vae_state_dict, additional_replacements=[meta_path, oldKey, oldQuery, oldValue], config=config)
+    oldOut = {"old": "proj_attn", "new": "to_out.0"}
+    assign_to_checkpoint(paths, new_checkpoint, vae_state_dict, additional_replacements=[meta_path, oldKey, oldQuery, oldValue, oldOut], config=config)
     conv_attn_to_linear(new_checkpoint)
 
     for i in range(num_up_blocks):
@@ -668,7 +670,8 @@ def convert_ldm_vae_checkpoint(checkpoint, config):
     oldKey = {"old": "key", "new": "to_k"}
     oldQuery = {"old": "query", "new": "to_q"}
     oldValue = {"old": "value", "new": "to_v"}
-    assign_to_checkpoint(paths, new_checkpoint, vae_state_dict, additional_replacements=[meta_path, oldKey, oldQuery, oldValue], config=config)
+    oldOut = {"old": "proj_attn", "new": "to_out.0"}
+    assign_to_checkpoint(paths, new_checkpoint, vae_state_dict, additional_replacements=[meta_path, oldKey, oldQuery, oldValue, oldOut], config=config)
     conv_attn_to_linear(new_checkpoint)
     return new_checkpoint
 
