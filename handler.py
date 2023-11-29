@@ -9,6 +9,8 @@ import os
 import json
 import base64
 
+from safetensors import safe_open
+
 from diffusers.utils.import_utils import is_xformers_available
 from typing import Any
 import torch
@@ -21,7 +23,10 @@ from animatediff.models.unet import UNet3DConditionModel
 from animatediff.pipelines.pipeline_animation import AnimationPipeline
 from animatediff.utils.util import save_videos_grid
 from animatediff.utils.util import load_weights
+from animatediff.utils.convert_from_ckpt import convert_ldm_unet_checkpoint, convert_ldm_clip_checkpoint, convert_ldm_vae_checkpoint
+from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora
 
+current_model = "backup"
 
 class EndpointHandler():
     def __init__(self, model_path: str = "bluestarburst/AnimateDiff-SceneFusion"):
@@ -46,6 +51,15 @@ class EndpointHandler():
 
         unet         = UNet3DConditionModel.from_pretrained_2d(pretrained_model_path=unet_model_path, unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs), config_path=unet_config_path)
 
+        # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
+        inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/inv_latents/ddim_latent-1.pt")
+        self.latents = torch.load(inv_latent_path).to(torch.float)
+        print(self.latents.shape, self.latents.dtype)
+        
+        # torch.backends.cuda.enable_mem_efficient_sdp(True)
+        torch.backends.cuda.enable_flash_sdp(True)
+        torch.backends.cuda.enable_math_sdp(True)
+
         if is_xformers_available(): unet.enable_xformers_memory_efficient_attention()
         else: assert False
 
@@ -56,18 +70,67 @@ class EndpointHandler():
         
         # huggingface download motion module from bluestarburst/AnimateDiff-SceneFusion/models/Motion_Module/mm_sd_v15.ckpt
 
-        motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/Motion_Module/mm_sd_v15.ckpt")
+        # motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/Motion_Module/mm_sd_v15.ckpt")
+        motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/mm.pth")
+        # LORA_DREAMBOOTH_PATH="models/DreamBooth_LoRA/toonyou_beta3.safetensors"
+        
+        LORA_DREAMBOOTH_PATH = None
+        LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
 
-        self.pipeline = load_weights(
-            self.pipeline,
-            # motion module
-            motion_module_path         = motion_module,
-            motion_module_lora_configs = [],
-            # image layers
-            dreambooth_model_path      = "",
-            lora_model_path            = "",
-            lora_alpha                 = 0.8,
-        ).to("cuda")
+        # self.pipeline = load_weights(
+        #     self.pipeline,
+        #     # motion module
+        #     motion_module_path         = motion_module,
+        #     motion_module_lora_configs = [],
+        #     # image layers
+        #     dreambooth_model_path      = "",
+        #     lora_model_path            = "",
+        #     lora_alpha                 = 0.8,
+        # ).to("cuda")
+        
+        motion_module_state_dict = torch.load(motion_module, map_location="cpu")
+        missing, unexpected = self.pipeline.unet.load_state_dict(motion_module_state_dict, strict=False)
+        assert len(unexpected) == 0
+        
+        
+        # FIX THIS
+        if LORA_DREAMBOOTH_PATH != "":
+            if LORA_DREAMBOOTH_PATH.endswith(".ckpt"):
+                state_dict = torch.load(LORA_DREAMBOOTH_PATH)
+                self.pipeline.unet.load_state_dict(state_dict)
+
+            elif LORA_DREAMBOOTH_PATH.endswith(".safetensors"):
+                state_dict = {}
+                with safe_open(LORA_DREAMBOOTH_PATH, framework="pt", device="cpu") as f:
+                    for key in f.keys():
+                        state_dict[key] = f.get_tensor(key)
+
+                is_lora = all("lora" in k for k in state_dict.keys())
+                if not is_lora:
+                    base_state_dict = state_dict
+                else:
+                    base_state_dict = {}
+                    with safe_open("", framework="pt", device="cpu") as f:
+                        for key in f.keys():
+                            base_state_dict[key] = f.get_tensor(key)
+
+                # vae
+                converted_vae_checkpoint = convert_ldm_vae_checkpoint(base_state_dict, self.pipeline.vae.config)
+                self.pipeline.vae.load_state_dict(converted_vae_checkpoint)
+                # unet
+                converted_unet_checkpoint = convert_ldm_unet_checkpoint(base_state_dict, self.pipeline.unet.config)
+                self.pipeline.unet.load_state_dict(converted_unet_checkpoint, strict=False)
+                # text_model (TODO: problem here)
+                # converted_test_encoder_checkpoint = convert_ldm_clip_checkpoint(base_state_dict)
+                # pipeline.text_encoder = converted_test_encoder_checkpoint
+
+                # import pdb
+                # pdb.set_trace()
+                if is_lora:
+                    self.pipeline = convert_lora(self.pipeline, state_dict)
+                    # self.pipeline = convert_lora(self.pipeline, state_dict, alpha=model_config.lora_alpha)
+
+        self.pipeline.to("cuda")
     
     def __call__(self, data : Any):
         """
@@ -81,15 +144,28 @@ class EndpointHandler():
         steps = data.pop("steps", 25)
         guidance_scale = data.pop("guidance_scale", 12.5)
         
+        print(f"current seed: {torch.initial_seed()}")
+        print(f"sampling {prompt} ...")
         vids = self.pipeline(
-            prompt=prompt, 
-            negative_prompt=negative_prompt, 
-            num_inference_steps=steps, 
-            guidance_scale=guidance_scale,
-            width= 256,
-            height= 256,
-            video_length= 5,
-            ).videos
+            prompt,
+            negative_prompt     = negative_prompt,
+            num_inference_steps = steps,
+            guidance_scale      = guidance_scale,
+            width               = 256,
+            height              = 256,
+            video_length        = 5,
+            latents             = self.latents,
+        ).videos
+
+        # vids = self.pipeline(
+        #     prompt=prompt, 
+        #     negative_prompt=negative_prompt, 
+        #     num_inference_steps=steps, 
+        #     guidance_scale=guidance_scale,
+        #     width= 256,
+        #     height= 256,
+        #     video_length= 5,
+        #     ).videos
         
         videos = rearrange(vids, "b c t h w -> t b c h w")
         n_rows=6
