@@ -160,6 +160,10 @@ def assign_to_checkpoint(
     """
     assert isinstance(paths, list), "Paths should be a list of dicts containing 'old' and 'new' keys."
 
+    
+    
+
+
     # Splits the attention layers into three variables.
     if attention_paths_to_split is not None:
         for path, path_map in attention_paths_to_split.items():
@@ -625,7 +629,10 @@ def convert_ldm_vae_checkpoint(checkpoint, config):
     mid_attentions = [key for key in vae_state_dict if "encoder.mid.attn" in key]
     paths = renew_vae_attention_paths(mid_attentions)
     meta_path = {"old": "mid.attn_1", "new": "mid_block.attentions.0"}
-    assign_to_checkpoint(paths, new_checkpoint, vae_state_dict, additional_replacements=[meta_path], config=config)
+    oldKey = {"old": "key", "new": "to_k"}
+    oldQuery = {"old": "query", "new": "to_q"}
+    oldValue = {"old": "value", "new": "to_v"}
+    assign_to_checkpoint(paths, new_checkpoint, vae_state_dict, additional_replacements=[meta_path, oldKey, oldQuery, oldValue], config=config)
     conv_attn_to_linear(new_checkpoint)
 
     for i in range(num_up_blocks):
@@ -658,7 +665,10 @@ def convert_ldm_vae_checkpoint(checkpoint, config):
     mid_attentions = [key for key in vae_state_dict if "decoder.mid.attn" in key]
     paths = renew_vae_attention_paths(mid_attentions)
     meta_path = {"old": "mid.attn_1", "new": "mid_block.attentions.0"}
-    assign_to_checkpoint(paths, new_checkpoint, vae_state_dict, additional_replacements=[meta_path], config=config)
+    oldKey = {"old": "key", "new": "to_k"}
+    oldQuery = {"old": "query", "new": "to_q"}
+    oldValue = {"old": "value", "new": "to_v"}
+    assign_to_checkpoint(paths, new_checkpoint, vae_state_dict, additional_replacements=[meta_path, oldKey, oldQuery, oldValue], config=config)
     conv_attn_to_linear(new_checkpoint)
     return new_checkpoint
 
