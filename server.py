@@ -219,8 +219,9 @@ app = Flask(__name__)
 CORS(app)
 
 # define a route which will be called on inference
-@app.route('/', methods=['POST'])
+@app.route('/scene', methods=['POST'])
 def inference():
+    print("inference called")
     # get the request data
     data = request.get_json(force=True)
     # call the handler
@@ -230,7 +231,7 @@ def inference():
 
 # run the app
 if __name__ == '__main__':
-    app.run(port=443)
+    app.run(port=5000)
     
 while True:
     pass
