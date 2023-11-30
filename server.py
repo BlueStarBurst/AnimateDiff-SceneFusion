@@ -52,11 +52,11 @@ class EndpointHandler():
         vae          = AutoencoderKL.from_pretrained(model_path, subfolder="models/StableDiffusion/vae").to("cuda")
 
         unet_model_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/StableDiffusion/unet/diffusion_pytorch_model.bin")
-        unet_config_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/StableDiffusion/unet/config.json", local_dir="models/StableDiffusion/unet/diffusion_pytorch_model.bin/config.json")
+        unet_config_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/StableDiffusion/unet/config.json")
 
         print(unet_model_path)
 
-        unet         = UNet3DConditionModel.from_pretrained_2d(pretrained_model_path=unet_model_path, unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs))
+        unet         = UNet3DConditionModel.from_pretrained_2d(pretrained_model_path=unet_model_path, unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs), config_path=unet_config_path)
 
         # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
         inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/inv_latents/ddim_latent-1.pt")
