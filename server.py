@@ -148,6 +148,7 @@ class EndpointHandler():
         print(data)
 
         prompt = data.pop("prompt", "")
+        prompt = f"camera panning right to left, {prompt}, masterpiece, best quality"
         negative_prompt = data.pop("negative_prompt", "")
         negative_prompt += ",easynegative,bad_construction,bad_structure,bad_wail,bad_windows,blurry,cloned_window,cropped,deformed,disfigured,error,extra_windows,extra_chimney,extra_door,extra_structure,extra_frame,fewer_digits,fused_structure,gross_proportions,jpeg_artifacts,long_roof,low_quality,structure_limbs,missing_windows,missing_doors,missing_roofs,mutated_structure,mutation,normal_quality,out_of_frame,owres,poorly_drawn_structure,poorly_drawn_house,signature,text,too_many_windows,ugly,username,uta,watermark,worst_quality"
         steps = data.pop("steps", 25)
@@ -156,7 +157,11 @@ class EndpointHandler():
         
         print("data: " + str(prompt) + str(negative_prompt) + str(steps) + str(guidance_scale))
 
-        print(f"current seed: {torch.initial_seed()}")
+        # print(f"current seed: {torch.initial_seed()}")
+        
+        # random seed
+        # torch.manual_seed(0)
+        
         print(f"sampling {prompt} ...")
         vids = self.pipeline(
             prompt,
