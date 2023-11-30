@@ -11,7 +11,7 @@ from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers import ModelMixin
 from diffusers.utils import BaseOutput
 from diffusers.utils.import_utils import is_xformers_available
-from diffusers.models.attention import CrossAttention, FeedForward
+from diffusers.models.attention import Attention as CrossAttention, FeedForward
 
 from einops import rearrange, repeat
 import math
@@ -290,7 +290,7 @@ class VersatileAttention(CrossAttention):
 
         query = self.to_q(hidden_states)
         dim = query.shape[-1]
-        query = self.reshape_heads_to_batch_dim(query)
+        query = self.head_to_batch_dim(query)
 
         if self.added_kv_proj_dim is not None:
             raise NotImplementedError
@@ -299,8 +299,8 @@ class VersatileAttention(CrossAttention):
         key = self.to_k(encoder_hidden_states)
         value = self.to_v(encoder_hidden_states)
 
-        key = self.reshape_heads_to_batch_dim(key)
-        value = self.reshape_heads_to_batch_dim(value)
+        key = self.head_to_batch_dim(key)
+        value = self.head_to_batch_dim(value)
 
         if attention_mask is not None:
             if attention_mask.shape[-1] != query.shape[1]:
@@ -308,9 +308,14 @@ class VersatileAttention(CrossAttention):
                 attention_mask = F.pad(attention_mask, (0, target_length), value=0.0)
                 attention_mask = attention_mask.repeat_interleave(self.heads, dim=0)
 
+        if not hasattr(self, '_use_memory_efficient_attention_xformers'):
+            self._use_memory_efficient_attention_xformers = True
+
+
         # attention, what we cannot get enough of
         if self._use_memory_efficient_attention_xformers:
-            hidden_states = self._memory_efficient_attention_xformers(query, key, value, attention_mask)
+            self.set_use_memory_efficient_attention_xformers(True)
+            # hidden_states = self._memory_efficient_attention_xformers(query, key, value, attention_mask)
             # Some versions of xformers return output in fp32, cast it back to the dtype of the input
             hidden_states = hidden_states.to(query.dtype)
         else:

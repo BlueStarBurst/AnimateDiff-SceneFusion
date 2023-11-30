@@ -177,6 +177,7 @@ def main(
     for name, module in unet.named_modules():
         if "motion_modules" in name and (train_whole_module or name.endswith(tuple(trainable_modules))):
             for params in module.parameters():
+                print("trainable", name)
                 params.requires_grad = True
 
     if enable_xformers_memory_efficient_attention:
@@ -320,6 +321,7 @@ def main(
     # Only show the progress bar once on each machine.
     progress_bar = tqdm(range(global_step, max_train_steps), disable=not accelerator.is_local_main_process)
     progress_bar.set_description("Steps")
+    optimizer.zero_grad()
 
     for epoch in range(first_epoch, num_train_epochs):
         unet.train()
@@ -362,18 +364,30 @@ def main(
                 else:
                     raise ValueError(f"Unknown prediction type {noise_scheduler.prediction_type}")
 
+                
                 # Predict the noise residual and compute loss
                 model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
+                print("Model Output:", model_pred)
                 loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
 
                 # Gather the losses across all processes for logging (if we use distributed training).
                 avg_loss = accelerator.gather(loss.repeat(train_batch_size)).mean()
                 train_loss += avg_loss.item() / gradient_accumulation_steps
 
+                print("Loss:", loss)
+
                 # Backpropagate
                 accelerator.backward(loss)
+                
                 if accelerator.sync_gradients:
                     accelerator.clip_grad_norm_(unet.parameters(), max_grad_norm)
+                    
+                print("grad: ")
+                for param in unet.parameters():
+                    if param.grad is not None:
+                        print(param.grad)
+                        break
+                    
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
