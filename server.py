@@ -231,6 +231,11 @@ def inference():
     # return the result back
     return result
 
+# GET request to check if the server is running
+@app.route('/')
+def index():
+    return "Server is running!"
+
 # run the app
 if __name__ == '__main__':
     app.run(port=5000)
