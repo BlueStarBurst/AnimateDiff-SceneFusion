@@ -234,6 +234,7 @@ def inference():
 # GET request to check if the server is running
 @app.route('/')
 def index():
+    print("index called")
     return "Server is running!"
 
 # run the app
