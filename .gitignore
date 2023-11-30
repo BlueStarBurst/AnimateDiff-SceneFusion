@@ -26,3 +26,4 @@ models/Motion_Module/*
 !models/MotionLoRA/
 !models/MotionLoRA/*.txt
 unet/*
+.venv

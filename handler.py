@@ -42,7 +42,7 @@ class EndpointHandler():
         ### >>> create validation pipeline >>> ###
         tokenizer    = CLIPTokenizer.from_pretrained(model_path, subfolder="models/StableDiffusion/tokenizer")
         text_encoder = CLIPTextModel.from_pretrained(model_path, subfolder="models/StableDiffusion/text_encoder")
-        vae          = AutoencoderKL.from_pretrained(model_path, subfolder="models/StableDiffusion/vae")         
+        vae          = AutoencoderKL.from_pretrained(model_path, subfolder="models/StableDiffusion/vae").to("cuda")
         
         unet_model_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/StableDiffusion/unet/diffusion_pytorch_model.bin")
         unet_config_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/StableDiffusion/unet/config.json")        
@@ -66,7 +66,7 @@ class EndpointHandler():
         self.pipeline = AnimationPipeline(
             vae=vae, text_encoder=text_encoder, tokenizer=tokenizer, unet=unet,
             scheduler=DDIMScheduler(**OmegaConf.to_container(inference_config.noise_scheduler_kwargs.DDIMScheduler))
-        )
+        ).to("cuda")
         
         # huggingface download motion module from bluestarburst/AnimateDiff-SceneFusion/models/Motion_Module/mm_sd_v15.ckpt
 
@@ -130,7 +130,7 @@ class EndpointHandler():
                     self.pipeline = convert_lora(self.pipeline, state_dict)
                     # self.pipeline = convert_lora(self.pipeline, state_dict, alpha=model_config.lora_alpha)
 
-        self.pipeline
+        self.pipeline.to("cuda")
     
     def __call__(self, data : Any):
         """
@@ -206,3 +206,4 @@ class EndpointHandler():
 
 
 new_handler = EndpointHandler()
+new_handler({"prompt": "a house", "negative_prompt": "a house", "steps": 25, "guidance_scale": 12.5})
