@@ -486,7 +486,10 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
 
         from diffusers.utils import WEIGHTS_NAME
         model = cls.from_config(config, **unet_additional_kwargs)
-        model_file = os.path.join(pretrained_model_path, WEIGHTS_NAME)
+        if config_path is None:
+            model_file = os.path.join(pretrained_model_path, WEIGHTS_NAME)
+        else:
+            model_file = pretrained_model_path
         if not os.path.isfile(model_file):
             raise RuntimeError(f"{model_file} does not exist")
         state_dict = torch.load(model_file, map_location="cpu")
