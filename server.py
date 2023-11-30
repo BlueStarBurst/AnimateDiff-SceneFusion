@@ -229,6 +229,7 @@ def inference():
     print("inference called")
     # get the request data
     data = request.get_json(force=True)
+    print(data)
     # call the handler
     result = handler(data)
     # return the result back
