@@ -151,6 +151,7 @@ class EndpointHandler():
         steps = data.pop("steps", 25)
         guidance_scale = data.pop("guidance_scale", 12.5)
         
+        print(data)
         print("data: " + str(prompt) + str(negative_prompt) + str(steps) + str(guidance_scale))
 
         print(f"current seed: {torch.initial_seed()}")
