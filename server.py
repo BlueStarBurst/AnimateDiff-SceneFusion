@@ -216,6 +216,8 @@ handler = EndpointHandler()
 
 # create a flask app instance
 app = Flask(__name__)
+
+#allow any origin to make a request
 CORS(app)
 
 # define a route which will be called on inference
