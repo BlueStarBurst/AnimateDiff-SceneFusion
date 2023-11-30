@@ -81,7 +81,7 @@ class EndpointHandler():
         motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/mm.pth")
         # LORA_DREAMBOOTH_PATH="models/DreamBooth_LoRA/toonyou_beta3.safetensors"
 
-        LORA_DREAMBOOTH_PATH = None
+        LORA_DREAMBOOTH_PATH = ""
         # LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
 
         # self.pipeline = load_weights(
