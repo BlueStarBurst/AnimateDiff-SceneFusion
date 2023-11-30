@@ -1,0 +1,3 @@
+[submodule "Everydream"]
+    path = data/Everydream
+    url = https://github.com/victorchall/EveryDream.git
