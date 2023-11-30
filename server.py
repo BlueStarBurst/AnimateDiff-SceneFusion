@@ -231,3 +231,6 @@ def inference():
 # run the app
 if __name__ == '__main__':
     app.run()
+    
+while True:
+    pass
