@@ -144,6 +144,8 @@ class EndpointHandler():
         __call__ method will be called once per request. This can be used to
         run inference.
         """
+        
+        print(data)
 
         prompt = data.pop("prompt", "")
         negative_prompt = data.pop("negative_prompt", "")
@@ -151,7 +153,7 @@ class EndpointHandler():
         steps = data.pop("steps", 25)
         guidance_scale = data.pop("guidance_scale", 12.5)
         
-        print(data)
+        
         print("data: " + str(prompt) + str(negative_prompt) + str(steps) + str(guidance_scale))
 
         print(f"current seed: {torch.initial_seed()}")
@@ -229,9 +231,13 @@ def inference():
     print("inference called")
     # get the request data
     data = request.get_json(force=True)
-    print(data)
+    
+    real_data = data["inputs"]
+    
+    print(real_data)
+    
     # call the handler
-    result = handler(data)
+    result = handler(real_data)
     # return the result back
     return result
 
