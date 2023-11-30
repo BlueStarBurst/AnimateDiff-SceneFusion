@@ -191,7 +191,7 @@ class EndpointHandler():
             outputs.append(x)
 
         path = "output.gif"
-        imageio.mimsave(path, outputs, fps=fps)
+        imageio.mimsave(path, outputs, fps=fps, loop=0)
 
         # open the file as binary and read the data
         with open(path, mode="rb") as file:
