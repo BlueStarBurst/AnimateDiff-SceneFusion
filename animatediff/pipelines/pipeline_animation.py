@@ -57,6 +57,8 @@ class AnimationPipeline(DiffusionPipeline):
         ],
     ):
         super().__init__()
+        
+        self.progress_percent = 0
 
         if hasattr(scheduler.config, "steps_offset") and scheduler.config.steps_offset != 1:
             deprecation_message = (
@@ -412,6 +414,9 @@ class AnimationPipeline(DiffusionPipeline):
                 # call the callback, if provided
                 if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0):
                     progress_bar.update()
+                    # save progress percent to self.progress_percent
+                    self.progress_percent = progress_bar.n / progress_bar.total * 100
+                    
                     if callback is not None and i % callback_steps == 0:
                         callback(i, t, latents)
 

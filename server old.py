@@ -1,8 +1,6 @@
 # host a server that can be accessed by any post request
 # and return the result of the model
 
-import threading
-from time import sleep
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
@@ -36,8 +34,8 @@ from animatediff.utils.util import load_weights
 from animatediff.utils.convert_from_ckpt import convert_ldm_unet_checkpoint, convert_ldm_clip_checkpoint, convert_ldm_vae_checkpoint
 from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora, convert_motion_lora_ckpt_to_diffusers
 
-processes = {}
-current_model = "backup"
+
+current_model = "final"
 
 class EndpointHandler():
     def __init__(self, model_path: str = "bluestarburst/AnimateDiff-SceneFusion"):
@@ -158,14 +156,8 @@ class EndpointHandler():
         # self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
 
         self.pipeline.to("cuda")
-        
-    def getProgress(self, ip_address):
-        while self.pipeline.progress_percent < 100:
-            processes[ip_address]["progress"] = self.pipeline.progress_percent
-            sleep(0.1)
-        processes[ip_address]["progress"] = 100
 
-    def __call__(self, data : Any, ip_address : str = ""):
+    def __call__(self, data : Any):
         """
         __call__ method will be called once per request. This can be used to
         run inference.
@@ -190,14 +182,7 @@ class EndpointHandler():
         
         # get random latent from self.latents
         latent = self.latents[random.randint(0, len(self.latents)-1)]
-        
         print(f"sampling {prompt} ...")
-        
-        # create a thread to monitor the process and get self.pipeline.progress_percent
-        processes[ip_address]["progtask"] = threading.Thread(target=self.getProgress, args=(ip_address,))
-        self.pipeline.progress_percent = 0
-        processes[ip_address]["progtask"].start()
-        
         vids = self.pipeline(
             prompt,
             negative_prompt     = negative_prompt,
@@ -208,9 +193,6 @@ class EndpointHandler():
             video_length        = 5,
             latents             = latent,
         ).videos
-        
-        processes[ip_address]["progress"] = 100
-        processes[ip_address]["progtask"].join(1000)
 
         # vids = self.pipeline(
         #     prompt=prompt,
@@ -248,13 +230,12 @@ class EndpointHandler():
 
         # Create a JSON object with the Base64-encoded content
         json_data = {
-            "type": "gif",
             "filename": "output.gif",
             "content": base64_encoded_content
         }
 
         # Convert the JSON object to a JSON-formatted string
-        return json_data
+        return json.dumps(json_data)
 
 
 # This is the entry point for the serverless function.
@@ -280,90 +261,21 @@ def serve_static(filename):
 
     return jsonify(request.data)
 
-
-queue = []
-queuePos = []
-isWorking = False
-
-def timeoutProcess(ip_address):
-    sleep(30)
-    if ip_address in processes and processes[ip_address]["done"] is True:
-        processes.pop(ip_address)
-
-def infer(real_data, ip_address):
-    global isWorking
-    isWorking = True
-    result = handler(real_data, ip_address)
-    processes[ip_address]["result"] = result
-    processes[ip_address]["done"] = True
-    queue.pop(0)
-    queuePos.pop(0)
-    isWorking = False
-    # create a thread to remove the process from processes dict after 30 seconds
-    processes[ip_address]["timeout"] = threading.Thread(target=timeoutProcess, args=(ip_address,))
-    processes[ip_address]["timeout"].start()
-
 # define a route which will be called on inference
 @app.route('/scene', methods=['POST'])
 def inference():
     print("inference called")
-    
     # get the request data
     data = request.get_json(force=True)
     
     real_data = data["inputs"]
     
-    # save the request ip address
-    ip_address = data["ip"]
-    processes[ip_address] = {"progress": 0, "result": ""}
-    processes[ip_address]["done"] = False
+    print(real_data)
     
-    queue.append({"ip_address": ip_address, "data": real_data})
-    queuePos.append(ip_address)
-    
-    # call handler in a thread
-    
-    # processes[ip_address]["task"] = threading.Thread(target=handler, args=(real_data, ip_address))
-    
-    # print(real_data)
-    # # call the handler
-    
-    # result = handler(real_data, ip_address)
-    # # return the result back
-    # return result
-    
-    if len(queue) > 1:
-        return json.dumps({"status": "queued"})
-    else:
-        return json.dumps({"status": "processing"})
-    
-
-
-def loopQueue():
-    global isWorking
-    while True:
-        if len(queue) > 0:
-            if not isWorking:
-                isWorking = True
-                infer(queue[0]["data"], queue[0]["ip_address"])
-        sleep(2)
-        
-# create a thread to loop the queue
-queueTask = threading.Thread(target=loopQueue)
-queueTask.start()
-
-@app.route('/isReady', methods=['POST'])
-def isReady():
-    # get the request data
-    data = request.get_json(force=True)
-    ip_address = data["ip"]
-    if ip_address in processes and processes[ip_address]["done"] == True:
-        toSend = json.dumps({"ready": True, "result": processes[ip_address]["result"]})
-        # remove process from processes dict
-        processes.pop(ip_address)
-        return toSend
-    else:
-        return json.dumps({"ready": False, "progress": processes[ip_address]["progress"], "queue": len(queue), "pos": queuePos.index(ip_address) + 1})
+    # call the handler
+    result = handler(real_data)
+    # return the result back
+    return result
 
 # run the app
 if __name__ == '__main__':

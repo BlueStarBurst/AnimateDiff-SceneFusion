@@ -26,6 +26,4 @@ models/Motion_Module/*
 !models/MotionLoRA/
 !models/MotionLoRA/*.txt
 unet/*
-key.pem
-cert.pem
 .venv
