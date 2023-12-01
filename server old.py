@@ -1,7 +1,6 @@
 # host a server that can be accessed by any post request
 # and return the result of the model
 
-import threading
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
@@ -35,7 +34,7 @@ from animatediff.utils.util import load_weights
 from animatediff.utils.convert_from_ckpt import convert_ldm_unet_checkpoint, convert_ldm_clip_checkpoint, convert_ldm_vae_checkpoint
 from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora, convert_motion_lora_ckpt_to_diffusers
 
-processes = {}
+
 current_model = "final"
 
 class EndpointHandler():
@@ -157,13 +156,8 @@ class EndpointHandler():
         # self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
 
         self.pipeline.to("cuda")
-        
-    def getProgress(self, ip_address):
-        while self.pipeline.progress_percent < 100:
-            processes[ip_address]["progress"] = self.pipeline.progress_percent
-        processes[ip_address]["progress"] = 100
 
-    def __call__(self, data : Any, ip_address : str = ""):
+    def __call__(self, data : Any):
         """
         __call__ method will be called once per request. This can be used to
         run inference.
@@ -188,14 +182,7 @@ class EndpointHandler():
         
         # get random latent from self.latents
         latent = self.latents[random.randint(0, len(self.latents)-1)]
-        
         print(f"sampling {prompt} ...")
-        
-        # create a thread to monitor the process and get self.pipeline.progress_percent
-        processes[ip_address]["task"] = threading.Thread(target=self.getProgress, args=(ip_address,))
-        self.pipeline.progress_percent = 0
-        processes[ip_address]["task"].start()
-        
         vids = self.pipeline(
             prompt,
             negative_prompt     = negative_prompt,
@@ -274,16 +261,9 @@ def serve_static(filename):
 
     return jsonify(request.data)
 
-
-
-
 # define a route which will be called on inference
 @app.route('/scene', methods=['POST'])
 def inference():
-    
-    # save the request ip address
-    ip_address = request.remote_addr
-    processes[ip_address] = {}
     print("inference called")
     # get the request data
     data = request.get_json(force=True)
@@ -293,13 +273,9 @@ def inference():
     print(real_data)
     
     # call the handler
-    result = handler(real_data, ip_address)
+    result = handler(real_data)
     # return the result back
     return result
-
-@app.route('/isReady', methods=['POST'])
-def isReady():
-    return True
 
 # run the app
 if __name__ == '__main__':
