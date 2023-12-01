@@ -516,7 +516,11 @@ def timeoutProcess(ip_address):
 def infer(real_data, ip_address):
     global isWorking
     isWorking = True
-    result = handler(real_data, ip_address)
+    result = ""
+    if processes[ip_address]["isLarge"]:
+        result = large_handler(real_data, ip_address)
+    else:
+        result = handler(real_data, ip_address)
     processes[ip_address]["result"] = result
     processes[ip_address]["done"] = True
     queue.pop(0)
@@ -540,6 +544,7 @@ def inference():
     ip_address = data["ip"]
     processes[ip_address] = {"progress": 0, "result": ""}
     processes[ip_address]["done"] = False
+    processes[ip_address]["isLarge"] = data["isLarge"] if "isLarge" in data else False
     
     queue.append({"ip_address": ip_address, "data": real_data})
     queuePos.append(ip_address)
