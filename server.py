@@ -342,7 +342,7 @@ queueTask.start()
 def isReady():
     # get the request data
     data = request.get_json(force=True)
-    ip_address = data["ip_address"]
+    ip_address = data["ip"]
     if ip_address in processes and processes[ip_address]["progress"] == 100:
         return json.dumps({"ready": True, "result": processes[ip_address]["result"]})
     else:
