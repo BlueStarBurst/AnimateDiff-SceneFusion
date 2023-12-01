@@ -303,7 +303,7 @@ def inference():
     real_data = data["inputs"]
     
     # save the request ip address
-    ip_address = request.remote_addr
+    ip_address = data["ip"]
     processes[ip_address] = {"progress": 0, "result": ""}
     
     queue.append({"ip_address": ip_address, "data": real_data})
