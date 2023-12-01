@@ -231,8 +231,8 @@ class EndpointHandler():
 # create an instance of the handler
 handler = EndpointHandler()
 
-# create a flask app instance
-app = Flask(__name__)
+# create a flask app instance and have static_url_path point to docs/src
+app = Flask(__name__, static_url_path='/docs')
 
 #allow any origin to make a request
 CORS(app)
@@ -256,8 +256,8 @@ def inference():
 # GET request to check if the server is running
 @app.route('/')
 def index():
-    print("index called")
-    return "Server is running!"
+    # send html file as response at docs/index.html
+    return app.send_static_file('index.html')
 
 # run the app
 if __name__ == '__main__':
