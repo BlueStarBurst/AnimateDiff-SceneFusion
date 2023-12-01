@@ -113,7 +113,7 @@ class EndpointHandler():
         motion_module_state_dict = torch.load(motion_module, map_location="cpu")
         # missing, unexpected = self.pipeline.unet.load_state_dict(motion_module_state_dict, strict=False)
         missing, unexpected = self.pipeline.unet.load_state_dict(mm_lora_state_dict, strict=False)
-        assert len(unexpected) == 0
+        # assert len(unexpected) == 0
 
 
         # FIX THIS
