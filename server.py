@@ -85,7 +85,11 @@ class EndpointHandler():
         # get state dict from checkpoint
         mm_lora = hf_hub_download(repo_id="guoyww/animatediff-motion-lora-pan-right", filename=f"diffusion_pytorch_model.safetensors")
         
-        mm_lora_state_dict = torch.load(mm_lora)
+        mm_lora_state_dict = {}
+        with safe_open(mm_lora, framework="pt", device="cpu") as f:
+                for key in f.keys():
+                    self.mm_lora_state_dict[key] = f.get_tensor(key)
+        
         self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
 
         # motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/Motion_Module/mm_sd_v15.ckpt")
