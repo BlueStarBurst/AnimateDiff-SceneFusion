@@ -111,7 +111,8 @@ class EndpointHandler():
         # ).to("cuda")
 
         motion_module_state_dict = torch.load(motion_module, map_location="cpu")
-        missing, unexpected = self.pipeline.unet.load_state_dict(motion_module_state_dict, strict=False)
+        # missing, unexpected = self.pipeline.unet.load_state_dict(motion_module_state_dict, strict=False)
+        missing, unexpected = self.pipeline.unet.load_state_dict(mm_lora_state_dict, strict=False)
         assert len(unexpected) == 0
 
 
@@ -152,7 +153,7 @@ class EndpointHandler():
                     self.pipeline = convert_lora(self.pipeline, state_dict)
                     # self.pipeline = convert_lora(self.pipeline, state_dict, alpha=model_config.lora_alpha)
 
-        self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
+        # self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
 
         self.pipeline.to("cuda")
 
