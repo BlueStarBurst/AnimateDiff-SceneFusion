@@ -28,3 +28,4 @@ models/Motion_Module/*
 unet/*
 key.pem
 cert.pem
+.venv
