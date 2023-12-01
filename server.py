@@ -254,7 +254,7 @@ class EndpointHandler():
         }
 
         # Convert the JSON object to a JSON-formatted string
-        return json.dumps(json_data)
+        return json_data
 
 
 # This is the entry point for the serverless function.
