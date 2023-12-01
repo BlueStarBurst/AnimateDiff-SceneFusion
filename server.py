@@ -64,7 +64,8 @@ class EndpointHandler():
 
         self.latents = []
         # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
-        for i in range(1, 40):
+        # for i in range(1, 40):
+        for i in range(1, 10):
             inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/inv_latents/ddim_latent-{i}.pt")
             self.latents.append(torch.load(inv_latent_path).to(torch.float))
             print(self.latents[i-1].shape, self.latents[i-1].dtype)
