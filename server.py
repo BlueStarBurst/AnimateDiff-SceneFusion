@@ -90,7 +90,7 @@ class EndpointHandler():
                 for key in f.keys():
                     mm_lora_state_dict[key] = f.get_tensor(key)
         
-        self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
+        
 
         # motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/Motion_Module/mm_sd_v15.ckpt")
         motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/mm.pth")
@@ -151,6 +151,8 @@ class EndpointHandler():
                 if is_lora:
                     self.pipeline = convert_lora(self.pipeline, state_dict)
                     # self.pipeline = convert_lora(self.pipeline, state_dict, alpha=model_config.lora_alpha)
+
+        self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
 
         self.pipeline.to("cuda")
 
