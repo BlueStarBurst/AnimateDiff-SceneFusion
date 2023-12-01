@@ -237,6 +237,17 @@ app = Flask(__name__, static_url_path='/docs')
 #allow any origin to make a request
 CORS(app)
 
+# GET request to check if the server is running
+
+@app.route('/', defaults=dict(filename=None))
+@app.route('/<path:filename>', methods=['GET'])
+def serve_static(filename):
+    filename = filename or 'index.html'
+    if request.method == 'GET':
+        return send_from_directory('./docs', filename)
+
+    return jsonify(request.data)
+
 # define a route which will be called on inference
 @app.route('/scene', methods=['POST'])
 def inference():
@@ -252,17 +263,6 @@ def inference():
     result = handler(real_data)
     # return the result back
     return result
-
-# GET request to check if the server is running
-
-@app.route('/', defaults=dict(filename=None))
-@app.route('/<path:filename>', methods=['GET', 'POST'])
-def serve_static(filename):
-    filename = filename or 'index.html'
-    if request.method == 'GET':
-        return send_from_directory('./docs', filename)
-
-    return jsonify(request.data)
 
 # run the app
 if __name__ == '__main__':
