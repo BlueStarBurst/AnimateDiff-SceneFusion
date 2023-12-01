@@ -349,7 +349,10 @@ def isReady():
     data = request.get_json(force=True)
     ip_address = data["ip"]
     if ip_address in processes and processes[ip_address]["done"] == True:
-        return json.dumps({"ready": True, "result": processes[ip_address]["result"]})
+        toSend = json.dumps({"ready": True, "result": processes[ip_address]["result"]})
+        # remove process from processes dict
+        processes.pop(ip_address)
+        return toSend
     else:
         return json.dumps({"ready": False, "progress": processes[ip_address]["progress"], "queue": len(queue), "pos": queuePos.index(ip_address) + 1})
 
