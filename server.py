@@ -35,7 +35,7 @@ from animatediff.utils.convert_from_ckpt import convert_ldm_unet_checkpoint, con
 from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora, convert_motion_lora_ckpt_to_diffusers
 
 
-current_model = "backup"
+current_model = "final"
 
 class EndpointHandler():
     def __init__(self, model_path: str = "bluestarburst/AnimateDiff-SceneFusion"):
@@ -62,7 +62,7 @@ class EndpointHandler():
 
         self.latents = []
         # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
-        for i in range(1, 20):
+        for i in range(1, 40):
             inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/inv_latents/ddim_latent-{i}.pt")
             self.latents.append(torch.load(inv_latent_path).to(torch.float))
             print(self.latents[i-1].shape, self.latents[i-1].dtype)
@@ -150,7 +150,7 @@ class EndpointHandler():
                 # import pdb
                 # pdb.set_trace()
                 if is_lora:
-                    self.pipeline = convert_lora(self.pipeline, state_dict, alpha=0.2)
+                    self.pipeline = convert_lora(self.pipeline, state_dict, alpha=0.1)
                     # self.pipeline = convert_lora(self.pipeline, state_dict, alpha=model_config.lora_alpha)
 
         # self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
@@ -189,8 +189,8 @@ class EndpointHandler():
             negative_prompt     = negative_prompt,
             num_inference_steps = steps,
             guidance_scale      = guidance_scale,
-            width               = 256,
-            height              = 256,
+            width               = 512,
+            height              = 512,
             video_length        = 5,
             latents             = latent,
         ).videos
