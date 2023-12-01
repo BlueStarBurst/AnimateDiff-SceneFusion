@@ -282,6 +282,7 @@ def serve_static(filename):
 
 
 queue = []
+queuePos = []
 isWorking = False
 
 def infer(real_data, ip_address):
@@ -289,7 +290,9 @@ def infer(real_data, ip_address):
     isWorking = True
     result = handler(real_data, ip_address)
     processes[ip_address]["result"] = result
+    processes[ip_address]["done"] = True
     queue.pop(0)
+    queuePos.pop(0)
     isWorking = False
 
 # define a route which will be called on inference
@@ -305,8 +308,10 @@ def inference():
     # save the request ip address
     ip_address = data["ip"]
     processes[ip_address] = {"progress": 0, "result": ""}
+    processes[ip_address]["done"] = False
     
     queue.append({"ip_address": ip_address, "data": real_data})
+    queuePos.append(ip_address)
     
     # call handler in a thread
     
@@ -343,10 +348,10 @@ def isReady():
     # get the request data
     data = request.get_json(force=True)
     ip_address = data["ip"]
-    if ip_address in processes and processes[ip_address]["progress"] == 100:
+    if ip_address in processes and processes[ip_address]["done"] == True:
         return json.dumps({"ready": True, "result": processes[ip_address]["result"]})
     else:
-        return json.dumps({"ready": False, "progress": processes[ip_address]["progress"]})
+        return json.dumps({"ready": False, "progress": processes[ip_address]["progress"], "queue": len(queue), "pos": queuePos.index(ip_address) + 1})
 
 # run the app
 if __name__ == '__main__':
