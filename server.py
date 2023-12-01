@@ -204,8 +204,8 @@ class EndpointHandler():
             negative_prompt     = negative_prompt,
             num_inference_steps = steps,
             guidance_scale      = guidance_scale,
-            width               = 512,
-            height              = 512,
+            width               = 256,
+            height              = 256,
             video_length        = 5,
             latents             = latent,
         ).videos
