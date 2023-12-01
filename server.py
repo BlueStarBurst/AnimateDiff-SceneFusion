@@ -321,8 +321,8 @@ class EndpointHandler():
         motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/mm.pth")
         # LORA_DREAMBOOTH_PATH="models/DreamBooth_LoRA/toonyou_beta3.safetensors"
 
-        # LORA_DREAMBOOTH_PATH = ""
-        LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
+        LORA_DREAMBOOTH_PATH = ""
+        # LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
 
         # self.pipeline = load_weights(
         #     self.pipeline,
@@ -707,7 +707,7 @@ class LargeEndpointHandler():
 # create an instance of the handler
 handler = EndpointHandler()
 large_handler = LargeEndpointHandler()
-notlorahandler = NoLoraEndpointHandler()
+# notlorahandler = NoLoraEndpointHandler()
 
 
 # create a flask app instance and have static_url_path point to docs/src
@@ -741,9 +741,7 @@ def infer(real_data, ip_address):
     global isWorking
     isWorking = True
     result = ""
-    if processes[ip_address]["isNotLora"]:
-        result = notlorahandler(real_data, ip_address)
-    elif processes[ip_address]["isLarge"]:
+    if processes[ip_address]["isLarge"]:
         result = large_handler(real_data, ip_address)
     else:
         result = handler(real_data, ip_address)
