@@ -32,7 +32,7 @@ from animatediff.pipelines.pipeline_animation import AnimationPipeline
 from animatediff.utils.util import save_videos_grid
 from animatediff.utils.util import load_weights
 from animatediff.utils.convert_from_ckpt import convert_ldm_unet_checkpoint, convert_ldm_clip_checkpoint, convert_ldm_vae_checkpoint
-from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora
+from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora, convert_motion_lora_ckpt_to_diffusers
 
 
 current_model = "backup"
@@ -81,7 +81,12 @@ class EndpointHandler():
 
         # huggingface download motion module from bluestarburst/AnimateDiff-SceneFusion/models/Motion_Module/mm_sd_v15.ckpt
         
-        self.pipeline.load_lora_weights("diffusers/animatediff-motion-lora-pan-right", adapter_name="pan-right")
+        
+        # get state dict from checkpoint
+        mm_lora = hf_hub_download(repo_id="guoyww/animatediff-motion-lora-pan-right", filename=f"diffusion_pytorch_model.safetensors")
+        
+        mm_lora_state_dict = torch.load(mm_lora)
+        self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
 
         # motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/Motion_Module/mm_sd_v15.ckpt")
         motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/mm.pth")
