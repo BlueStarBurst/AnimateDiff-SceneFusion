@@ -63,7 +63,7 @@ class EndpointHandler():
 
         unet         = UNet3DConditionModel.from_pretrained_2d(pretrained_model_path=unet_model_path, unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs), config_path=unet_config_path)
 
-        latent_list = [1, 2, 3,4,5,6,9,11,12,13,15,17,18,21,22,24,30,34,39]
+        latent_list = [1, 2, 3,4,5,6,9,11,12,13,15,17,18,21,22,24,30,39]
 
         self.latents = []
         # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
