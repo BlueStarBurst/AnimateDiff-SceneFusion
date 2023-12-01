@@ -1,7 +1,7 @@
 # host a server that can be accessed by any post request
 # and return the result of the model
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
 import numpy as np
@@ -254,10 +254,15 @@ def inference():
     return result
 
 # GET request to check if the server is running
-@app.route('/')
-def index():
-    # send html file as response at docs/index.html
-    return app.send_static_file('index.html')
+
+@app.route('/', defaults=dict(filename=None))
+@app.route('/<path:filename>', methods=['GET', 'POST'])
+def serve_static(filename):
+    filename = filename or 'index.html'
+    if request.method == 'GET':
+        return send_from_directory('./docs', filename)
+
+    return jsonify(request.data)
 
 # run the app
 if __name__ == '__main__':
