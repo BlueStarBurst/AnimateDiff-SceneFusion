@@ -285,6 +285,11 @@ queue = []
 queuePos = []
 isWorking = False
 
+def timeoutProcess(ip_address):
+    sleep(30)
+    if ip_address in processes and processes[ip_address]["done"] is True:
+        processes.pop(ip_address)
+
 def infer(real_data, ip_address):
     global isWorking
     isWorking = True
@@ -294,6 +299,9 @@ def infer(real_data, ip_address):
     queue.pop(0)
     queuePos.pop(0)
     isWorking = False
+    # create a thread to remove the process from processes dict after 30 seconds
+    processes[ip_address]["timeout"] = threading.Thread(target=timeoutProcess, args=(ip_address,))
+    processes[ip_address]["timeout"].start()
 
 # define a route which will be called on inference
 @app.route('/scene', methods=['POST'])
@@ -329,6 +337,7 @@ def inference():
     else:
         return json.dumps({"status": "processing"})
     
+
 
 def loopQueue():
     global isWorking
