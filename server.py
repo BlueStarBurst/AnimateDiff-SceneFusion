@@ -88,7 +88,7 @@ class EndpointHandler():
         mm_lora_state_dict = {}
         with safe_open(mm_lora, framework="pt", device="cpu") as f:
                 for key in f.keys():
-                    self.mm_lora_state_dict[key] = f.get_tensor(key)
+                    mm_lora_state_dict[key] = f.get_tensor(key)
         
         self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
 
