@@ -281,9 +281,11 @@ class LargeEndpointHandler():
 
         unet         = UNet3DConditionModel.from_pretrained_2d(pretrained_model_path=unet_model_path, unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs), config_path=unet_config_path)
 
+        latent_list = [9, 39, 38, 27, 23, 22 ,18, 1]
+
         self.latents = []
         # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
-        for i in range(1, 40):
+        for i in latent_list:
         # for i in range(1, 10):
             inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{large_model}/inv_latents/ddim_latent-{i}.pt")
             self.latents.append(torch.load(inv_latent_path).to(torch.float))
@@ -318,8 +320,8 @@ class LargeEndpointHandler():
         motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{large_model}/mm.pth")
         # LORA_DREAMBOOTH_PATH="models/DreamBooth_LoRA/toonyou_beta3.safetensors"
 
-        LORA_DREAMBOOTH_PATH = ""
-        # LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
+        # LORA_DREAMBOOTH_PATH = ""
+        LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
 
         # self.pipeline = load_weights(
         #     self.pipeline,
