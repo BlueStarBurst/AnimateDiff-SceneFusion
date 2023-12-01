@@ -40,6 +40,225 @@ processes = {}
 current_model = "learnhigh"
 # current_model = "backup"
 
+class NoLoraEndpointHandler():
+    def __init__(self, model_path: str = "bluestarburst/AnimateDiff-SceneFusion"):
+
+        # inference_config_path = "configs/inference/inference-v3.yaml"
+        inference_config_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="configs/inference/inference-v3.yaml")
+        print(inference_config_path)
+
+        inference_config = OmegaConf.load(inference_config_path)
+
+        # inference_config = {'unet_additional_kwargs': {'unet_use_cross_frame_attention': False, 'unet_use_temporal_attention': False, 'use_motion_module': True, 'motion_module_resolutions': [1, 2, 4, 8], 'motion_module_mid_block': False, 'motion_module_decoder_only': False, 'motion_module_type': 'Vanilla', 'motion_module_kwargs': {'num_attention_heads': 8, 'num_transformer_block': 1, 'attention_block_types': ['Temporal_Self', 'Temporal_Self'], 'temporal_position_encoding': True, 'temporal_position_encoding_max_len': 24, 'temporal_attention_dim_div': 1}}, 'noise_scheduler_kwargs': {'DDIMScheduler': {'num_train_timesteps': 1000, 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': 'linear', 'steps_offset': 1, 'clip_sample': False}, 'EulerAncestralDiscreteScheduler': {'num_train_timesteps': 1000, 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': 'linear'}, 'KDPM2AncestralDiscreteScheduler': {'num_train_timesteps': 1000, 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': 'linear'}}}
+
+        ### >>> create validation pipeline >>> ###
+        tokenizer    = CLIPTokenizer.from_pretrained(model_path, subfolder="models/StableDiffusion/tokenizer")
+        text_encoder = CLIPTextModel.from_pretrained(model_path, subfolder="models/StableDiffusion/text_encoder")
+        vae          = AutoencoderKL.from_pretrained(model_path, subfolder="models/StableDiffusion/vae").to("cuda")
+
+        unet_model_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/StableDiffusion/unet/diffusion_pytorch_model.bin")
+        unet_config_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/StableDiffusion/unet/config.json")
+
+        print(unet_model_path)
+
+        unet         = UNet3DConditionModel.from_pretrained_2d(pretrained_model_path=unet_model_path, unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs), config_path=unet_config_path)
+
+        latent_list = [1, 2, 3,4,5,6,9,11,12,13,15,17,18,21,22,24,30,39]
+
+        self.latents = []
+        # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
+        # for i in range(1, 40):
+        for i in latent_list:
+            inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/inv_latents/ddim_latent-{i}.pt")
+            self.latents.append(torch.load(inv_latent_path).to(torch.float))
+            # print(self.latents[i-1].shape, self.latents[i-1].dtype)
+
+        # torch.backends.cuda.enable_mem_efficient_sdp(True)
+        torch.backends.cuda.enable_flash_sdp(True)
+        torch.backends.cuda.enable_math_sdp(True)
+
+        if is_xformers_available(): unet.enable_xformers_memory_efficient_attention()
+        else: assert False
+
+        self.pipeline = AnimationPipeline(
+            vae=vae, text_encoder=text_encoder, tokenizer=tokenizer, unet=unet,
+            scheduler=DDIMScheduler(**OmegaConf.to_container(inference_config.noise_scheduler_kwargs.DDIMScheduler))
+        ).to("cuda")
+
+        # huggingface download motion module from bluestarburst/AnimateDiff-SceneFusion/models/Motion_Module/mm_sd_v15.ckpt
+        
+        
+        # get state dict from checkpoint
+        mm_lora = hf_hub_download(repo_id="guoyww/animatediff-motion-lora-pan-right", filename=f"diffusion_pytorch_model.safetensors")
+        
+        mm_lora_state_dict = {}
+        with safe_open(mm_lora, framework="pt", device="cpu") as f:
+                for key in f.keys():
+                    mm_lora_state_dict[key] = f.get_tensor(key)
+        
+        
+
+        # motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/Motion_Module/mm_sd_v15.ckpt")
+        motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/mm.pth")
+        # LORA_DREAMBOOTH_PATH="models/DreamBooth_LoRA/toonyou_beta3.safetensors"
+
+        LORA_DREAMBOOTH_PATH = ""
+        # LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
+
+        # self.pipeline = load_weights(
+        #     self.pipeline,
+        #     # motion module
+        #     motion_module_path         = motion_module,
+        #     motion_module_lora_configs = [],
+        #     # image layers
+        #     dreambooth_model_path      = "",
+        #     lora_model_path            = "",
+        #     lora_alpha                 = 0.8,
+        # ).to("cuda")
+
+        motion_module_state_dict = torch.load(motion_module, map_location="cpu")
+        missing, unexpected = self.pipeline.unet.load_state_dict(motion_module_state_dict, strict=False)
+        # missing, unexpected = self.pipeline.unet.load_state_dict(mm_lora_state_dict, strict=False)
+        # assert len(unexpected) == 0
+
+
+        # FIX THIS
+        if LORA_DREAMBOOTH_PATH != "":
+            if LORA_DREAMBOOTH_PATH.endswith(".ckpt"):
+                state_dict = torch.load(LORA_DREAMBOOTH_PATH)
+                self.pipeline.unet.load_state_dict(state_dict)
+
+            elif LORA_DREAMBOOTH_PATH.endswith(".safetensors"):
+                state_dict = {}
+                with safe_open(LORA_DREAMBOOTH_PATH, framework="pt", device="cpu") as f:
+                    for key in f.keys():
+                        state_dict[key] = f.get_tensor(key)
+
+                is_lora = all("lora" in k for k in state_dict.keys())
+                if not is_lora:
+                    base_state_dict = state_dict
+                else:
+                    base_state_dict = {}
+                    with safe_open("", framework="pt", device="cpu") as f:
+                        for key in f.keys():
+                            base_state_dict[key] = f.get_tensor(key)
+
+                # vae
+                converted_vae_checkpoint = convert_ldm_vae_checkpoint(base_state_dict, self.pipeline.vae.config)
+                self.pipeline.vae.load_state_dict(converted_vae_checkpoint)
+                # unet
+                converted_unet_checkpoint = convert_ldm_unet_checkpoint(base_state_dict, self.pipeline.unet.config)
+                self.pipeline.unet.load_state_dict(converted_unet_checkpoint, strict=False)
+                # text_model (TODO: problem here)
+                # converted_test_encoder_checkpoint = convert_ldm_clip_checkpoint(base_state_dict)
+                # pipeline.text_encoder = converted_test_encoder_checkpoint
+
+                # import pdb
+                # pdb.set_trace()
+                if is_lora:
+                    self.pipeline = convert_lora(self.pipeline, state_dict, alpha=0.1)
+                    # self.pipeline = convert_lora(self.pipeline, state_dict, alpha=model_config.lora_alpha)
+
+        # self.pipeline = convert_motion_lora_ckpt_to_diffusers(self.pipeline, mm_lora_state_dict, alpha=0.8)
+
+        self.pipeline.to("cuda")
+        
+    def getProgress(self, ip_address):
+        while self.pipeline.progress_percent < 100:
+            processes[ip_address]["progress"] = self.pipeline.progress_percent
+            sleep(0.1)
+        processes[ip_address]["progress"] = 100
+
+    def __call__(self, data : Any, ip_address : str = ""):
+        """
+        __call__ method will be called once per request. This can be used to
+        run inference.
+        """
+        
+        print(data)
+
+        prompt = data.pop("prompt", "")
+        prompt = f"pan right to left, {prompt}, masterpiece, best quality"
+        negative_prompt = data.pop("negative_prompt", "")
+        negative_prompt += ",easynegative,bad_construction,bad_structure,bad_wail,bad_windows,blurry,cloned_window,cropped,deformed,disfigured,error,extra_windows,extra_chimney,extra_door,extra_structure,extra_frame,fewer_digits,fused_structure,gross_proportions,jpeg_artifacts,long_roof,low_quality,structure_limbs,missing_windows,missing_doors,missing_roofs,mutated_structure,mutation,normal_quality,out_of_frame,owres,poorly_drawn_structure,poorly_drawn_house,signature,text,too_many_windows,ugly,username,uta,watermark,worst_quality"
+        steps = data.pop("steps", 25)
+        guidance_scale = data.pop("guidance_scale", 12.5)
+        
+        
+        print("data: " + str(prompt) + str(negative_prompt) + str(steps) + str(guidance_scale))
+
+        # print(f"current seed: {torch.initial_seed()}")
+        
+        # random seed
+        # torch.manual_seed(0)
+        
+        # get random latent from self.latents
+        latent = self.latents[random.randint(0, len(self.latents)-1)]
+        
+        print(f"sampling {prompt} ...")
+        
+        # create a thread to monitor the process and get self.pipeline.progress_percent
+        processes[ip_address]["progtask"] = threading.Thread(target=self.getProgress, args=(ip_address,))
+        self.pipeline.progress_percent = 0
+        processes[ip_address]["progtask"].start()
+        
+        vids = self.pipeline(
+            prompt,
+            negative_prompt     = negative_prompt,
+            num_inference_steps = steps,
+            guidance_scale      = guidance_scale,
+            width               = 256,
+            height              = 256,
+            video_length        = 5,
+            latents             = latent,
+        ).videos
+        
+        processes[ip_address]["progress"] = 100
+        processes[ip_address]["progtask"].join(1000)
+
+        # vids = self.pipeline(
+        #     prompt=prompt,
+        #     negative_prompt=negative_prompt,
+        #     num_inference_steps=steps,
+        #     guidance_scale=guidance_scale,
+        #     width= 256,
+        #     height= 256,
+        #     video_length= 5,
+        #     ).videos
+
+        videos = rearrange(vids, "b c t h w -> t b c h w")
+        n_rows=6
+        fps=1
+        loop = True
+        rescale=False
+        outputs = []
+        for x in videos:
+            x = torchvision.utils.make_grid(x, nrow=n_rows)
+            x = x.transpose(0, 1).transpose(1, 2).squeeze(-1)
+            if rescale:
+                x = (x + 1.0) / 2.0  # -1,1 -> 0,1
+            x = (x * 255).numpy().astype(np.uint8)
+            outputs.append(x)
+
+        path = "output.gif"
+        imageio.mimsave(path, outputs, fps=fps, loop=0)
+
+        # open the file as binary and read the data
+        with open(path, mode="rb") as file:
+            file_content = file.read()
+        # return json response with binary data
+        # Encode the binary data using Base64
+        base64_encoded_content = base64.b64encode(file_content).decode("utf-8")
+
+        # Create a JSON object with the Base64-encoded content
+        json_data = {
+            "type": "gif",
+            "filename": "output.gif",
+            "content": base64_encoded_content
+        }
+
+        # Convert the JSON object to a JSON-formatted string
+        return json_data
 class EndpointHandler():
     def __init__(self, model_path: str = "bluestarburst/AnimateDiff-SceneFusion"):
 
@@ -488,6 +707,8 @@ class LargeEndpointHandler():
 # create an instance of the handler
 handler = EndpointHandler()
 large_handler = LargeEndpointHandler()
+notlorahandler = NoLoraEndpointHandler()
+
 
 # create a flask app instance and have static_url_path point to docs/src
 app = Flask(__name__, static_url_path='/docs')
@@ -520,7 +741,9 @@ def infer(real_data, ip_address):
     global isWorking
     isWorking = True
     result = ""
-    if processes[ip_address]["isLarge"]:
+    if processes[ip_address]["isNotLora"]:
+        result = notlorahandler(real_data, ip_address)
+    elif processes[ip_address]["isLarge"]:
         result = large_handler(real_data, ip_address)
     else:
         result = handler(real_data, ip_address)
@@ -548,6 +771,7 @@ def inference():
     processes[ip_address] = {"progress": 0, "result": ""}
     processes[ip_address]["done"] = False
     processes[ip_address]["isLarge"] = data["isLarge"] if "isLarge" in data else False
+    processes[ip_address]["isNotLora"] = data["isNotLora"] if "isNotLora" in data else False
     
     queue.append({"ip_address": ip_address, "data": real_data})
     queuePos.append(ip_address)
