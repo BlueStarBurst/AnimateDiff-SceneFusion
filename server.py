@@ -192,7 +192,7 @@ class EndpointHandler():
             width               = 256,
             height              = 256,
             video_length        = 5,
-            latents             = latent,
+            # latents             = latent,
         ).videos
 
         # vids = self.pipeline(
