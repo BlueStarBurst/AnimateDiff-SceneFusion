@@ -23,6 +23,7 @@ from typing import Any
 import torch
 import imageio
 import torchvision
+import random
 import numpy as np
 from einops import rearrange
 
@@ -32,6 +33,7 @@ from animatediff.utils.util import save_videos_grid
 from animatediff.utils.util import load_weights
 from animatediff.utils.convert_from_ckpt import convert_ldm_unet_checkpoint, convert_ldm_clip_checkpoint, convert_ldm_vae_checkpoint
 from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora
+
 
 current_model = "backup"
 
@@ -58,10 +60,12 @@ class EndpointHandler():
 
         unet         = UNet3DConditionModel.from_pretrained_2d(pretrained_model_path=unet_model_path, unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs), config_path=unet_config_path)
 
+        self.latents = []
         # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
-        inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/inv_latents/ddim_latent-1.pt")
-        self.latents = torch.load(inv_latent_path).to(torch.float)
-        print(self.latents.shape, self.latents.dtype)
+        for i in range(1, 20):
+            inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/inv_latents/ddim_latent-{i}.pt")
+            self.latents.append(torch.load(inv_latent_path).to(torch.float))
+            print(self.latents[i-1].shape, self.latents[i-1].dtype)
 
         # torch.backends.cuda.enable_mem_efficient_sdp(True)
         torch.backends.cuda.enable_flash_sdp(True)
@@ -81,8 +85,8 @@ class EndpointHandler():
         motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/mm.pth")
         # LORA_DREAMBOOTH_PATH="models/DreamBooth_LoRA/toonyou_beta3.safetensors"
 
-        LORA_DREAMBOOTH_PATH = ""
-        # LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
+        # LORA_DREAMBOOTH_PATH = ""
+        LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
 
         # self.pipeline = load_weights(
         #     self.pipeline,
@@ -162,6 +166,9 @@ class EndpointHandler():
         # random seed
         # torch.manual_seed(0)
         
+        # get random latent from self.latents
+        latent = self.latents[random.randint(0, len(self.latents)-1)]
+        
         print(f"sampling {prompt} ...")
         vids = self.pipeline(
             prompt,
@@ -171,7 +178,7 @@ class EndpointHandler():
             width               = 256,
             height              = 256,
             video_length        = 5,
-            latents             = self.latents,
+            latents             = latent,
         ).videos
 
         # vids = self.pipeline(
