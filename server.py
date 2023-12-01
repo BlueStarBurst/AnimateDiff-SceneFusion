@@ -63,10 +63,12 @@ class EndpointHandler():
 
         unet         = UNet3DConditionModel.from_pretrained_2d(pretrained_model_path=unet_model_path, unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs), config_path=unet_config_path)
 
+        latent_list = [1, 2, 3,4,5,6,9,11,12,13,15,17,18,21,22,24,30,34,39]
+
         self.latents = []
         # inv_latent_path = f"{OUTPUT_DIR}/inv_latents/ddim_latent-1.pt"
         # for i in range(1, 40):
-        for i in range(1, 10):
+        for i in latent_list:
             inv_latent_path = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/inv_latents/ddim_latent-{i}.pt")
             self.latents.append(torch.load(inv_latent_path).to(torch.float))
             # print(self.latents[i-1].shape, self.latents[i-1].dtype)
