@@ -1,4 +1,10 @@
-%cd /content/AnimateDiff-SceneFusion
+# host a server that can be accessed by any post request
+# and return the result of the model
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import json
+import numpy as np
 # this is the huggingface handler file
 
 from diffusers import AutoencoderKL, DDPMScheduler, DDIMScheduler
@@ -75,8 +81,8 @@ class EndpointHandler():
         motion_module = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename=f"models/Motion_Module/{current_model}/mm.pth")
         # LORA_DREAMBOOTH_PATH="models/DreamBooth_LoRA/toonyou_beta3.safetensors"
 
-        LORA_DREAMBOOTH_PATH = None
-        LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
+        LORA_DREAMBOOTH_PATH = ""
+        # LORA_DREAMBOOTH_PATH = hf_hub_download(repo_id="bluestarburst/AnimateDiff-SceneFusion", filename="models/DreamBooth_LoRA/toonyou_beta3.safetensors")
 
         # self.pipeline = load_weights(
         #     self.pipeline,
@@ -138,14 +144,24 @@ class EndpointHandler():
         __call__ method will be called once per request. This can be used to
         run inference.
         """
+        
+        print(data)
 
         prompt = data.pop("prompt", "")
+        prompt = f"camera panning right to left, {prompt}, masterpiece, best quality"
         negative_prompt = data.pop("negative_prompt", "")
         negative_prompt += ",easynegative,bad_construction,bad_structure,bad_wail,bad_windows,blurry,cloned_window,cropped,deformed,disfigured,error,extra_windows,extra_chimney,extra_door,extra_structure,extra_frame,fewer_digits,fused_structure,gross_proportions,jpeg_artifacts,long_roof,low_quality,structure_limbs,missing_windows,missing_doors,missing_roofs,mutated_structure,mutation,normal_quality,out_of_frame,owres,poorly_drawn_structure,poorly_drawn_house,signature,text,too_many_windows,ugly,username,uta,watermark,worst_quality"
         steps = data.pop("steps", 25)
         guidance_scale = data.pop("guidance_scale", 12.5)
+        
+        
+        print("data: " + str(prompt) + str(negative_prompt) + str(steps) + str(guidance_scale))
 
-        print(f"current seed: {torch.initial_seed()}")
+        # print(f"current seed: {torch.initial_seed()}")
+        
+        # random seed
+        # torch.manual_seed(0)
+        
         print(f"sampling {prompt} ...")
         vids = self.pipeline(
             prompt,
@@ -183,7 +199,7 @@ class EndpointHandler():
             outputs.append(x)
 
         path = "output.gif"
-        imageio.mimsave(path, outputs, fps=fps)
+        imageio.mimsave(path, outputs, fps=fps, loop=0)
 
         # open the file as binary and read the data
         with open(path, mode="rb") as file:
@@ -205,3 +221,37 @@ class EndpointHandler():
 # This is the entry point for the serverless function.
 # This function will be called during inference time.
 
+# create an instance of the handler
+handler = EndpointHandler()
+
+# create a flask app instance
+app = Flask(__name__)
+
+#allow any origin to make a request
+CORS(app)
+
+# define a route which will be called on inference
+@app.route('/scene', methods=['POST'])
+def inference():
+    print("inference called")
+    # get the request data
+    data = request.get_json(force=True)
+    
+    real_data = data["inputs"]
+    
+    print(real_data)
+    
+    # call the handler
+    result = handler(real_data)
+    # return the result back
+    return result
+
+# GET request to check if the server is running
+@app.route('/')
+def index():
+    print("index called")
+    return "Server is running!"
+
+# run the app
+if __name__ == '__main__':
+    app.run(port=5000, host="0.0.0.0", ssl_context=('cert.pem', 'key.pem'))
