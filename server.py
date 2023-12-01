@@ -37,7 +37,7 @@ from animatediff.utils.convert_from_ckpt import convert_ldm_unet_checkpoint, con
 from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora, convert_motion_lora_ckpt_to_diffusers
 
 processes = {}
-current_model = "final"
+current_model = "backup"
 
 class EndpointHandler():
     def __init__(self, model_path: str = "bluestarburst/AnimateDiff-SceneFusion"):
